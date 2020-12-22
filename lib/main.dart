@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'حسابداری رایگان صفا',
+      title: 'Forex trading signal',
       debugShowCheckedModeBanner: false,
       theme: context.watch<MyProvider>().themeData,
       home: Dashboard()
