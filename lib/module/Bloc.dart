@@ -288,14 +288,20 @@ abstract class Bloc{
   }
 }
 
+class PublicBloc extends Bloc{
+  PublicBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body);
+}
+
 class SignalBloc extends Bloc{
   SignalBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body){
     this.loadData();
   }
 
+  PublicBloc comments;
   IntBloc kind = IntBloc()..setValue(1);
   IntBloc premium = IntBloc()..setValue(5);
   IntBloc sort = IntBloc()..setValue(1);
+
   
   loadData() async{
     rows.add(DataModel(status: Status.Loading));
@@ -325,7 +331,55 @@ class SignalBloc extends Bloc{
     });
     reload();
   }
+
+  loadComment(int id) async{
+    if (comments == null)
+      comments = PublicBloc(context: this.context, api: null, token: null, body: null);
+    comments.rows.add(DataModel(status: Status.Loading));
+    Future.delayed(Duration(seconds: 1)).then((value){
+      comments.rowsValue$.rows = [
+        TBComment(senderid: 1, sender: 'hassan', date: '2020/12/11', msg: 'thats great bro'),
+        TBComment(senderid: 2, sender: 'mojtaba', date: '2020/12/12', msg: 'can i copy your trade?'),
+        TBComment(senderid: 3, sender: 'mamad', date: '2020/12/12', msg: 'i dont think what you said happen!'),
+      ];
+      comments.rows.add(DataModel(status: Status.Loaded, rows: comments.rowsValue$.rows));
+    });
+  }
+
+  addComment(String msg){
+    comments.rowsValue$.rows.add(TBComment(senderid: 1, sender: 'me', msg: msg, date: 'now'));
+    comments.reload();
+  }
 }
 
+class AnalyzeBloc extends Bloc{
+  AnalyzeBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body){
+    this.loadData();
+  }
+
+  PublicBloc comments;
+  IntBloc kind = IntBloc()..setValue(1);
+  IntBloc premium = IntBloc()..setValue(5);
+  IntBloc sort = IntBloc()..setValue(1);
+
+  loadData() async{
+    rows.add(DataModel(status: Status.Loading));
+    Future.delayed(Duration(seconds: 1)).then((value){
+      rowsValue$.rows = [];
+      if (premium.value == 5){
+        if (kind.value == 1){
+          rowsValue$.rows.add(TBAnalyze(id: 2, namadid: 2, namad: 'AUDJPY', kind: 1, premium: false, subject: 'BTC shorts to retest previous ATH', senderid: 2,sender: 'ForexThief', senddate: 'Dec 19', smallpic: 'https://s3.tradingview.com/u/U75x1Cne_mid.png', bigpic: 'https://a.c-dn.net/b/0ZRBLH/types-of-forex-analysis_body_GBPUSD-chart-in-forex-analysis-techniques.png', expiredate: '2020/12/25', note: 'Always against the crowd.. You called me crazy on previous analysis to long from 5k Now we here. Consolidation box... Need to retest 20k soon', status: 1));
+          rowsValue$.rows.add(TBAnalyze(id: 4, namadid: 1, namad: 'USDCHF', kind: 1, premium: false, subject: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 16:45 PM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: 'BTC Update Since last few days we saw 7 continuous daily green candles on bitcoin & For strong growth ahead bitcoin needs some correction. Currently Market is entering in blow-off phase and As Bitcoin is forming similar pattern & fractals like last blow off phase so we are expecting a correction. No one knows exactly where it is going to top but based on our analysis there is possibility of \$23k - \$25k and then correction midterm to following targets \$18k - \$15k - \$12k. Expecting bearish move to start next week starting 21st of December.', status: 2));
+        }
+        if (kind.value == 2)
+        rowsValue$.rows.add(TBAnalyze(id: 1, namadid: 1, namad: 'USDCHF', kind: 2, premium: false, subject: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 16:45 PM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: '', status: 1));
+      }
+      if (premium.value == 6)
+        if (kind.value == 3)
+          rowsValue$.rows.add(TBAnalyze(id: 3, namadid: 3, namad: 'EURGBP', kind: 3, premium: true, subject: 'wait to sell', senderid: 1,sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 12:45 AM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: '', status: 2));
+      rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
+    });
+  }
+}
 
 

@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import 'Bloc.dart';
 import 'class.dart';
 import 'functions.dart';
 
@@ -382,6 +384,7 @@ class Edit extends StatelessWidget {
       onChanged: this.onChange,
       decoration: textDecoration(this.hint),
       obscureText: this.password,
+      style: GoogleFonts.abel(),
       validator: validator != null ? validator : (val){
         if ((val.isEmpty || val.trim() == "0") && notempty) 
           return 'مقدار فیلد اجباری است';
@@ -684,8 +687,9 @@ class Button extends StatelessWidget {
 }
 
 class Comment extends StatelessWidget {
-  const Comment({Key key, @required this.sender, @required this.msg, @required this.date, this.leftCorner = true}) : super(key: key);
+  const Comment({Key key, @required this.senderid, @required this.sender, @required this.msg, @required this.date, this.leftCorner = true}) : super(key: key);
 
+  final int senderid;
   final String sender;
   final String msg;
   final String date;
@@ -701,11 +705,11 @@ class Comment extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(backgroundImage: AssetImage('images/user1.jpg')),
+              CircleAvatar(backgroundImage: AssetImage('images/user$senderid.jpg')),
               SizedBox(width: 10),
-              Text('$sender', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'darker', fontSize: 14)),
+              Text('$sender', style: GoogleFonts.overpass(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(width: 15),
-              Text('$msg', style: TextStyle(fontSize: 12)),
+              Text('$msg', style: GoogleFonts.workSans()),
             ],
           ),
           SizedBox(height: 10),
@@ -716,5 +720,125 @@ class Comment extends StatelessWidget {
     );
   }
 }
+
+class SignalItem extends StatelessWidget {
+  const SignalItem({Key key, @required this.bloc, @required this.rw, this.ontap}) : super(key: key);
+
+  final TBSignal rw;
+  final SignalBloc bloc;
+  final VoidCallback ontap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: !rw.closedate.isEmpty ? Colors.red.withOpacity(0.05) : null,
+      child: ListTile(
+        leading: CircleAvatar(backgroundImage: AssetImage('images/user${rw.senderid}.jpg')),
+        title: Row(
+          children: [
+            Text(rw.namad),
+            SizedBox(width: 5),
+            Text(' - ${rw.title}', style: TextStyle(fontWeight: FontWeight.bold),)
+,                            ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${rw.senddate}'),
+            SizedBox(width: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IButton(icon: Icon(rw.liked ? CupertinoIcons.hand_thumbsup_fill : CupertinoIcons.hand_thumbsup, size: 20, color: rw.liked ? Colors.red :  null,), hint: 'Like', onPressed: ()=>bloc.likeSignal(rw.id)),
+                SizedBox(width: 5),
+                Container(child: Text('${rw.likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10))
+              ],
+            )
+          ],
+        ),
+        onTap: this.ontap
+      ),
+    );
+  }
+}
+
+class AnalyzeItem extends StatelessWidget {
+  const AnalyzeItem({Key key, @required this.bloc, @required this.rw, this.ontap}) : super(key: key);
+
+  final TBAnalyze rw;
+  final AnalyzeBloc bloc;
+  final VoidCallback ontap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+      color: Colors.grey[100],
+      child: Container(
+        width: 450,
+        padding: EdgeInsets.all(8),
+        child: ListTile(
+          onTap: this.ontap,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${rw.subject}', style: GoogleFonts.tajawal(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  Text('${rw.namad}', style: GoogleFonts.tajawal(fontSize: 14, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 10),
+                  Icon(rw.status ==1 ? Icons.trending_up : Icons.trending_down, color: rw.status ==1 ? Colors.green : Colors.deepOrange),
+                ],
+              ),
+              SizedBox(height: 15),
+              Image(image: NetworkImage('${rw.smallpic}'), height: 200, fit: BoxFit.fill),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  CircleAvatar(backgroundImage: AssetImage('images/user${rw.senderid}.jpg')),
+                  SizedBox(width: 10),
+                  Text('${rw.sender}'),
+                  Spacer(),
+                  Text('${rw.senddate}', style: GoogleFonts.rubik(fontSize: 10)),
+                ],
+              ),
+              SizedBox(height: 15),
+              Text('${rw.note}', style: GoogleFonts.rubik(fontSize: 14), maxLines: 3, overflow: TextOverflow.ellipsis, softWrap: true,),
+              SizedBox(height: 25),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(right: 12, left: 8, bottom: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.grey[400])
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IButton(icon: Icon(CupertinoIcons.hand_thumbsup), hint: 'Like', onPressed: (){}),
+                        SizedBox(width: 5),
+                        Padding(
+                          padding: EdgeInsets.only(top: 9),
+                          child: Text('${rw.likes}'),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 25),
+                  IButton(icon: Icon(CupertinoIcons.chat_bubble), hint: 'Comment', onPressed: (){})
+                ],
+              ),
+              SizedBox(height: 15)
+            ],
+          ),
+        ),
+      )
+    );
+  }
+}
+
 
 

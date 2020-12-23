@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:forex/module/Bloc.dart';
-import 'package:forex/module/Widgets.dart';
-import 'package:forex/module/class.dart';
-import 'package:forex/module/functions.dart';
+
+import '../module/Bloc.dart';
+import '../module/Widgets.dart';
+import '../module/class.dart';
+import '../module/functions.dart';
 
 SignalBloc _bloc;
 
@@ -64,35 +65,7 @@ class Signal extends StatelessWidget {
                     margin: EdgeInsets.only(right: 35),
                     child: StreamListWidget(
                       stream: _bloc.rowsStream$, 
-                      itembuilder: (rw)=>Card(
-                        color: !(rw as TBSignal).closedate.isEmpty ? Colors.red.withOpacity(0.05) : null,
-                        child: ListTile(
-                          leading: CircleAvatar(backgroundImage: AssetImage('images/user${(rw as TBSignal).senderid}.jpg')),
-                          title: Row(
-                            children: [
-                              Text((rw as TBSignal).namad),
-                              SizedBox(width: 5),
-                              Text(' - ${(rw as TBSignal).title}', style: TextStyle(fontWeight: FontWeight.bold),)
-,                            ],
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('${(rw as TBSignal).senddate}'),
-                              SizedBox(width: 10),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IButton(icon: Icon((rw as TBSignal).liked ? CupertinoIcons.hand_thumbsup_fill : CupertinoIcons.hand_thumbsup, size: 20, color: (rw as TBSignal).liked ? Colors.red :  null,), hint: 'Like', onPressed: ()=>_bloc.likeSignal((rw as TBSignal).id)),
-                                  SizedBox(width: 5),
-                                  Container(child: Text('${(rw as TBSignal).likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10))
-                                ],
-                              )
-                            ],
-                          ),
-                          onTap: ()=>showFormAsDialog(context: context, form: SignalInfo(sig: rw)),
-                        ),
-                      )
+                      itembuilder: (rw)=>SignalItem(bloc: _bloc, rw: rw, ontap: ()=>showFormAsDialog(context: context, form: SignalInfo(sig: rw)))
                     ),
                   ),
                 )
@@ -199,6 +172,7 @@ class SignalInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     IntBloc _comment = IntBloc()..setValue(0);
+    TextEditingController _edcom = TextEditingController();
     return StreamBuilder(
       stream: _bloc.rowsStream$,
       builder: (context, snapshot) {
@@ -264,7 +238,7 @@ class SignalInfo extends StatelessWidget {
                     SizedBox(width: 5),
                     Container(child: Text('${sig.likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10),),
                     SizedBox(width: 75),
-                    IButton(icon: Icon(CupertinoIcons.chat_bubble, size: 20, color: Colors.grey), hint: 'comment', onPressed: ()=>_comment.setValue(_comment.value==0 ? 1 : 0))
+                    IButton(icon: Icon(CupertinoIcons.chat_bubble, size: 20, color: Colors.grey), hint: 'comment', onPressed: (){_comment.setValue(_comment.value==0 ? 1 : 0); _bloc.loadComment(this.sig.id);})
                   ],
                 ),
               ),
@@ -282,14 +256,10 @@ class SignalInfo extends StatelessWidget {
                             children: [
                               SizedBox(width: 25),
                               Expanded(
-                                child: ListView(
-                                  children: [
-                                    Comment(sender: 'Hassan', msg: 'yeah bro thats true', date: '2020/12/03 12:30'),
-                                    Comment(sender: 'Mamad', msg: 'thats imazing man i follow you', date: '2020/12/03 18:11'),
-                                    Comment(sender: 'Arman', msg: 'i agree', date: '2020/12/04 10:11', leftCorner: false),
-                                    Comment(sender: 'Maryam', msg: 'could you trade for me?', date: '2020/12/05 00:11'),
-                                  ],
-                                ),
+                                child: StreamListWidget(
+                                  stream: _bloc.comments.rowsStream$, 
+                                  itembuilder: (rw)=>Comment(senderid: (rw as TBComment).senderid, sender: '${(rw as TBComment).sender}', msg: '${(rw as TBComment).msg}', date: '${(rw as TBComment).date}')
+                                )
                               ),
                             ],
                           ),
@@ -300,9 +270,9 @@ class SignalInfo extends StatelessWidget {
                       Row(
                         children: [
                           SizedBox(width: 5),
-                          Expanded(child: Edit(hint: 'comment ...')),
+                          Expanded(child: Edit(hint: 'comment ...', controller: _edcom, onSubmitted: (val){_bloc.addComment(val); _edcom.clear();})),
                           SizedBox(width: 5),
-                          FlatButton(child: Text('POST', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.lightBlue[900])), onPressed: (){})
+                          FlatButton(child: Text('POST', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.lightBlue[900])), onPressed: (){_bloc.addComment(_edcom.text); _edcom.clear();})
                         ],
                       ),
                       SizedBox(height: 10)

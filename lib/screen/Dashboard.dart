@@ -10,7 +10,7 @@ import 'Chart.dart';
 import 'Learning.dart';
 import 'Signal.dart';
 
-IntBloc _menu = IntBloc()..setValue(2);
+IntBloc _menu = IntBloc()..setValue(3);
 
 class Dashboard extends StatelessWidget{
   const Dashboard({Key key}) : super(key: key);
