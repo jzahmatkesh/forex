@@ -380,6 +380,33 @@ class AnalyzeBloc extends Bloc{
       rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
     });
   }
+
+  like(int id){
+    rowsValue$.rows.forEach((element) {
+      if ((element as TBAnalyze).id == id)
+        (element as TBAnalyze).liked = !(element as TBAnalyze).liked;
+    });
+    reload();
+  }
+
+  loadComment(int id) async{
+    if (comments == null)
+      comments = PublicBloc(context: this.context, api: null, token: null, body: null);
+    comments.rows.add(DataModel(status: Status.Loading));
+    Future.delayed(Duration(seconds: 1)).then((value){
+      comments.rowsValue$.rows = [
+        TBComment(senderid: 1, sender: 'hassan', date: '2020/12/11', msg: 'thats great bro'),
+        TBComment(senderid: 2, sender: 'mojtaba', date: '2020/12/12', msg: 'can i copy your trade?'),
+        TBComment(senderid: 3, sender: 'mamad', date: '2020/12/12', msg: 'i dont think what you said happen!'),
+      ];
+      comments.rows.add(DataModel(status: Status.Loaded, rows: comments.rowsValue$.rows));
+    });
+  }
+
+  addComment(String msg){
+    comments.rowsValue$.rows.add(TBComment(senderid: 1, sender: 'me', msg: msg, date: 'now'));
+    comments.reload();
+  }
 }
 
 

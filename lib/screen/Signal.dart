@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../module/Bloc.dart';
 import '../module/Widgets.dart';
@@ -234,11 +234,11 @@ class SignalInfo extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    IButton(icon: Icon(sig.liked ? CupertinoIcons.hand_thumbsup_fill : CupertinoIcons.hand_thumbsup, size: 20, color: sig.liked ? Colors.red :  null), hint: 'Like', onPressed: ()=>_bloc.likeSignal(sig.id)),
+                    IButton(icon: Icon(sig.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, size: 20, color: sig.liked ? Colors.red :  null), hint: 'Like', onPressed: ()=>_bloc.likeSignal(sig.id)),
                     SizedBox(width: 5),
                     Container(child: Text('${sig.likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10),),
                     SizedBox(width: 75),
-                    IButton(icon: Icon(CupertinoIcons.chat_bubble, size: 20, color: Colors.grey), hint: 'comment', onPressed: (){_comment.setValue(_comment.value==0 ? 1 : 0); _bloc.loadComment(this.sig.id);})
+                    IButton(icon: Icon(FontAwesomeIcons.commentAlt, size: 20, color: Colors.grey), hint: 'comment', onPressed: (){_comment.setValue(_comment.value==0 ? 1 : 0); _bloc.loadComment(this.sig.id);})
                   ],
                 ),
               ),

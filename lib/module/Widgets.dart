@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'Bloc.dart';
@@ -79,18 +80,18 @@ class IButton extends StatelessWidget {
     Icon _icon = icon != null
       ? Icon(this.icon.icon, size: this.size, color: this.icon.color)
       : type == Btn.Add
-        ? Icon(CupertinoIcons.plus_app, size: this.size)
+        ? Icon(FontAwesomeIcons.solidPlusSquare, size: this.size)
         : type == Btn.Del
-        ? Icon(CupertinoIcons.trash, size: this.size, color: Colors.grey[600])
+        ? Icon(FontAwesomeIcons.trash, size: this.size, color: Colors.grey[600])
         : type == Btn.Exit
-          ? Icon(CupertinoIcons.arrow_up_left_square, size: this.size)
+          ? Icon(FontAwesomeIcons.signOutAlt, size: this.size)
           : type == Btn.Reload
-            ? Icon(CupertinoIcons.arrow_2_circlepath, size: this.size)
+            ? Icon(FontAwesomeIcons.syncAlt, size: this.size)
             : type == Btn.Save
-              ? Icon(CupertinoIcons.floppy_disk, size: this.size, color: Colors.green)
+              ? Icon(FontAwesomeIcons.solidSave, size: this.size, color: Colors.green)
               : type == Btn.Edit
-                ? Icon(CupertinoIcons.pencil_ellipsis_rectangle, size: this.size, color: Colors.grey[600])
-                : Icon(CupertinoIcons.question_diamond, size: this.size);
+                ? Icon(FontAwesomeIcons.solidEdit, size: this.size, color: Colors.grey[600])
+                : Icon(FontAwesomeIcons.questionCircle, size: this.size);
 
     return _hnt.isEmpty
       ? IconButton(
@@ -139,16 +140,16 @@ class OButton extends StatelessWidget {
     Icon _icon = icon != null
       ? this.icon
       : type == Btn.Add
-        ? Icon(CupertinoIcons.plus_app)
+        ? Icon(FontAwesomeIcons.solidPlusSquare)
         : type == Btn.Del
-        ? Icon(CupertinoIcons.trash)
+        ? Icon(FontAwesomeIcons.trash)
         : type == Btn.Exit
-          ? Icon(CupertinoIcons.arrow_up_left_square)
+          ? Icon(FontAwesomeIcons.signOutAlt)
           : type == Btn.Reload
-            ? Icon(CupertinoIcons.arrow_2_circlepath)
+            ? Icon(FontAwesomeIcons.syncAlt)
             : type == Btn.Save
-              ? Icon(CupertinoIcons.floppy_disk)
-              : Icon(CupertinoIcons.question_diamond);
+              ? Icon(FontAwesomeIcons.solidSave)
+              : Icon(FontAwesomeIcons.questionCircle);
 
     return Card(
       color: this.color,
@@ -170,6 +171,24 @@ class OButton extends StatelessWidget {
   }
 }
 
+class FButton extends StatelessWidget {
+  const FButton({Key key, @required this.hint, @required this.child, @required this.onPressed}) : super(key: key);
+
+  final String hint;
+  final Widget child;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: this.hint,
+      child: FlatButton(
+        child: this.child,
+        onPressed: this.onPressed,
+      )
+    );
+  }
+}
 class Menu extends StatelessWidget {
   const Menu({Key key, @required this.title, this.icon, this.selected, this.selectedColor, this.onTap, this.inCard, this.hoverColor}) : super(key: key);
 
@@ -217,8 +236,8 @@ class Field extends StatelessWidget {
       ? this.sort == null
         ? widget()
         : this.sort == Sort.Asc
-          ? Row(children: [Icon(CupertinoIcons.sort_up, size: 20), SizedBox(width: 3,), widget()],)
-          : Row(children: [Icon(CupertinoIcons.sort_down, size: 20), SizedBox(width: 3,), widget()],)
+          ? Row(children: [Icon(FontAwesomeIcons.sortNumericDown, size: 20), SizedBox(width: 3,), widget()],)
+          : Row(children: [Icon(FontAwesomeIcons.sortNumericDownAlt, size: 20), SizedBox(width: 3,), widget()],)
       : data as Widget;
   }
 
@@ -739,7 +758,7 @@ class SignalItem extends StatelessWidget {
             Text(rw.namad),
             SizedBox(width: 5),
             Text(' - ${rw.title}', style: TextStyle(fontWeight: FontWeight.bold),)
-,                            ],
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -749,7 +768,7 @@ class SignalItem extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IButton(icon: Icon(rw.liked ? CupertinoIcons.hand_thumbsup_fill : CupertinoIcons.hand_thumbsup, size: 20, color: rw.liked ? Colors.red :  null,), hint: 'Like', onPressed: ()=>bloc.likeSignal(rw.id)),
+                IButton(icon: Icon(rw.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, size: 20, color: rw.liked ? Colors.red :  null,), hint: 'Like', onPressed: ()=>bloc.likeSignal(rw.id)),
                 SizedBox(width: 5),
                 Container(child: Text('${rw.likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10))
               ],
@@ -775,7 +794,7 @@ class AnalyzeItem extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 12, horizontal: 6),
       color: Colors.grey[100],
       child: Container(
-        width: 450,
+        width: screenWidth(context) * 0.30 > 435 ? 435 : screenWidth(context) * 0.30 < 400 ? 400 : screenWidth(context) * 0.30,
         padding: EdgeInsets.all(8),
         child: ListTile(
           onTap: this.ontap,
@@ -818,7 +837,7 @@ class AnalyzeItem extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        IButton(icon: Icon(CupertinoIcons.hand_thumbsup), hint: 'Like', onPressed: (){}),
+                        IButton(icon: Icon(rw.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, color: rw.liked ? Colors.red : Colors.grey[600]), hint: 'Like', onPressed: ()=>bloc.like(rw.id)),
                         SizedBox(width: 5),
                         Padding(
                           padding: EdgeInsets.only(top: 9),
@@ -828,7 +847,7 @@ class AnalyzeItem extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 25),
-                  IButton(icon: Icon(CupertinoIcons.chat_bubble), hint: 'Comment', onPressed: (){})
+                  IButton(icon: Icon(FontAwesomeIcons.commentAlt), hint: 'Comment', onPressed: (){})
                 ],
               ),
               SizedBox(height: 15)
@@ -840,5 +859,78 @@ class AnalyzeItem extends StatelessWidget {
   }
 }
 
+class SubscribeItem extends StatelessWidget {
+  const SubscribeItem({Key key, @required this.title, @required this.note, @required this.price, this.color}) : super(key: key);
+
+  final String title;
+  final String note;
+  final double price;
+  final String color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 295,
+      height: 503,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Card(
+              margin: EdgeInsets.all(12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5), bottomLeft: Radius.circular(5), bottomRight: Radius.circular(50)),
+              ),
+              elevation: 12,
+              child: Container(
+                width: screenWidth(context) * 0.25 < 275 ? 275 : screenWidth(context) * 0.25,
+                height: 450,
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 25),
+                    Text('$title', style: GoogleFonts.fredokaOne(fontSize: 26, color: Colors.blueGrey)),
+                    SizedBox(height: 25),
+                    Text('$note', style: GoogleFonts.padauk(fontSize: 16, color: Colors.grey[500]), textAlign: TextAlign.center,),
+                    Spacer(),
+                    Row(
+                      children: [
+                        FButton(hint: 'Visa Card', onPressed: (){}, child: FaIcon(FontAwesomeIcons.ccVisa, size: 36, color: Colors.blueGrey)),
+                        FButton(hint: 'Paypal', onPressed: (){}, child: FaIcon(FontAwesomeIcons.ccPaypal, size: 36, color: Colors.blue)),
+                        FButton(hint: 'Master Card', onPressed: (){}, child: FaIcon(FontAwesomeIcons.ccMastercard, size: 36, color: Colors.red)),
+                      ],
+                    ),
+                    SizedBox(height: 15),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        FButton(hint: 'Bitcoin', onPressed: (){}, child: FaIcon(FontAwesomeIcons.bitcoin, size: 36, color: Colors.yellow[900])),
+                        FButton(hint: 'Iranian Bank', onPressed: (){}, child: FaIcon(FontAwesomeIcons.moneyCheckAlt, size: 36, color: Colors.purple)),
+                      ],
+                    ),
+                    Spacer(),
+                    Row(
+                      children: [
+                        Text('payment', style: TextStyle(color: Colors.grey[600])),
+                        Spacer(),
+                        Text('\$$price / month', style: TextStyle(color: Colors.grey[400]))
+                      ],
+                    ),
+                    SizedBox(height: 35),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: FaIcon(FontAwesomeIcons.award, size: 65, color: this.color == null ? Colors.yellow[600] : hexToColor(this.color))
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 

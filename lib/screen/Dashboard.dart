@@ -1,16 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:forex/module/functions.dart';
 
 import '../module/Bloc.dart';
 import '../module/Widgets.dart';
+import '../module/functions.dart';
 import 'Analyze.dart';
 import 'Chart.dart';
 import 'Learning.dart';
 import 'Signal.dart';
+import 'SubScribe.dart';
 
-IntBloc _menu = IntBloc()..setValue(3);
+IntBloc _menu = IntBloc()..setValue(5);
 
 class Dashboard extends StatelessWidget{
   const Dashboard({Key key}) : super(key: key);
@@ -43,10 +44,11 @@ class Dashboard extends StatelessWidget{
                     SizedBox(height: 5),
                     Text('MONEY MANAGMENT', style: TextStyle(fontSize: 12)),
                     SizedBox(height: 35),
-                    Menu(icon: Icon(CupertinoIcons.chart_pie), title: 'Chart', selected: i==1, onTap: ()=>_menu.setValue(1)),
-                    Menu(icon: Icon(CupertinoIcons.waveform_path_ecg), title: 'Signal', selected: i==2, onTap: ()=>_menu.setValue(2)),
-                    Menu(icon: Icon(CupertinoIcons.square_stack_3d_up), title: 'Analyze', selected: i==3, onTap: ()=>_menu.setValue(3)),
-                    Menu(icon: Icon(FontAwesomeIcons.bookReader), title: 'Learning', selected: i==4, onTap: ()=>_menu.setValue(4)),
+                    Menu(icon: Icon(FontAwesomeIcons.chartPie, size: 22,), title: 'Chart', selected: i==1, onTap: ()=>_menu.setValue(1)),
+                    Menu(icon: Icon(FontAwesomeIcons.waveSquare, size: 22,), title: 'Signal', selected: i==2, onTap: ()=>_menu.setValue(2)),
+                    Menu(icon: Icon(FontAwesomeIcons.stackExchange, size: 22,), title: 'Analyze', selected: i==3, onTap: ()=>_menu.setValue(3)),
+                    Menu(icon: Icon(FontAwesomeIcons.bookOpen, size: 22,), title: 'Learning', selected: i==4, onTap: ()=>_menu.setValue(4)),
+                    Menu(icon: Icon(FontAwesomeIcons.userCircle, size: 22,), title: 'Subscribe', selected: i==5, onTap: ()=>_menu.setValue(5)),
                   ],
                 ),
               ),
@@ -74,7 +76,9 @@ class Dashboard extends StatelessWidget{
                             ? Signal()
                             : i == 3
                               ? Analyze()
-                              : Learning()
+                              : i == 4
+                                ? Learning()
+                                : SubScribe()
                       ),
                     )
                   ],

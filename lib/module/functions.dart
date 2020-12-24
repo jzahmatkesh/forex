@@ -311,3 +311,9 @@ Future<bool> sendSms(BuildContext context, String number, String msg) async{
   }
 }
 
+Color hexToColor(String code) {
+  return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+}
+
+
+

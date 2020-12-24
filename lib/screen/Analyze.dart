@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:forex/module/Bloc.dart';
 import 'package:forex/module/Widgets.dart';
 import 'package:forex/module/class.dart';
@@ -16,7 +17,7 @@ class Analyze extends StatelessWidget {
       _bloc = AnalyzeBloc(context: context, api: 'Signal', token: '', body: {});
     return Container(
       margin: EdgeInsets.only(top: 15),
-      width: screenWidth(context) * 0.75 > 1400 ? 1400 : screenWidth(context) * 0.75,
+      width: screenWidth(context) * 0.75 > 1250 ? 1250 : screenWidth(context) * 0.75,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         color: Colors.white,
@@ -25,7 +26,7 @@ class Analyze extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 5,
             child: Column(
               children: [
                 Container(
@@ -179,64 +180,109 @@ class AnalyzeInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: screenWidth(context) * 0.75,
-      padding: EdgeInsets.all(24),
-      child: ListView(
-        // crossAxisAlignment: CrossAxisAlignment.start,
-        // mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('${rw.subject}', style: GoogleFonts.tajawal(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 15),
-          Row(
+    IntBloc _comment = IntBloc()..setValue(0);
+    TextEditingController _edcom = TextEditingController();
+    return StreamBuilder(
+      stream: _bloc.rowsStream$,
+      builder: (context, snapshot) {
+        return Container(
+          width: screenWidth(context) * 0.75,
+          padding: EdgeInsets.all(24),
+          child: ListView(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            // mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${rw.namad}', style: GoogleFonts.tajawal(fontSize: 14, fontWeight: FontWeight.bold)),
-              SizedBox(width: 10),
-              Icon(rw.status ==1 ? Icons.trending_up : Icons.trending_down, color: rw.status ==1 ? Colors.green : Colors.deepOrange),
-            ],
-          ),
-          SizedBox(height: 15),
-          Image(image: NetworkImage('${rw.bigpic}'), height: 400, fit: BoxFit.fill),
-          SizedBox(height: 15),
-          Row(
-            children: [
-              CircleAvatar(backgroundImage: AssetImage('images/user${rw.senderid}.jpg')),
-              SizedBox(width: 10),
-              Text('${rw.sender}'),
-              Spacer(),
-              Text('${rw.senddate}', style: GoogleFonts.rubik(fontSize: 10)),
-            ],
-          ),
-          SizedBox(height: 15),
-          Text('${rw.note}', style: GoogleFonts.rubik(fontSize: 14), maxLines: 3, overflow: TextOverflow.ellipsis, softWrap: true,),
-          SizedBox(height: 25),
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.only(right: 12, left: 8, bottom: 3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.grey[400])
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IButton(icon: Icon(CupertinoIcons.hand_thumbsup), hint: 'Like', onPressed: (){}),
-                    SizedBox(width: 5),
-                    Padding(
-                      padding: EdgeInsets.only(top: 9),
-                      child: Text('${rw.likes}'),
-                    )
-                  ],
-                ),
+              Text('${rw.subject}', style: GoogleFonts.tajawal(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  Text('${rw.namad}', style: GoogleFonts.tajawal(fontSize: 14, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 10),
+                  Icon(rw.status ==1 ? Icons.trending_up : Icons.trending_down, color: rw.status ==1 ? Colors.green : Colors.deepOrange),
+                ],
               ),
-              SizedBox(width: 25),
-              IButton(icon: Icon(CupertinoIcons.chat_bubble), hint: 'Comment', onPressed: (){})
+              SizedBox(height: 15),
+              Image(image: NetworkImage('${rw.bigpic}'), height: 400, fit: BoxFit.fill),
+              SizedBox(height: 15),
+              Row(
+                children: [
+                  CircleAvatar(backgroundImage: AssetImage('images/user${rw.senderid}.jpg')),
+                  SizedBox(width: 10),
+                  Text('${rw.sender}'),
+                  Spacer(),
+                  Text('${rw.senddate}', style: GoogleFonts.rubik(fontSize: 10)),
+                ],
+              ),
+              SizedBox(height: 15),
+              Text('${rw.note}', style: GoogleFonts.rubik(fontSize: 14), maxLines: 3, overflow: TextOverflow.ellipsis, softWrap: true,),
+              SizedBox(height: 25),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(right: 12, left: 8, bottom: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.grey[400])
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IButton(icon: Icon(rw.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, color: rw.liked ? Colors.red : Colors.grey[600]), hint: 'Like', onPressed: ()=>_bloc.like(rw.id)),
+                        SizedBox(width: 5),
+                        Padding(
+                          padding: EdgeInsets.only(top: 9),
+                          child: Text('${rw.likes}'),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 25),
+                  IButton(icon: Icon(FontAwesomeIcons.commentAlt), hint: 'Comment', onPressed: (){_comment.setValue(_comment.value==0 ? 1 : 0); _bloc.loadComment(this.rw.id);})
+                ],
+              ),
+              SizedBox(height: 15),
+              StreamWidget(
+                stream: _comment.stream$, 
+                itemBuilder: (i)=> i==1 ? Container(
+                  height: screenHeight(context) * 0.5,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          color: Colors.grey[100],
+                          child: Row(
+                            children: [
+                              SizedBox(width: 25),
+                              Expanded(
+                                child: StreamListWidget(
+                                  stream: _bloc.comments.rowsStream$, 
+                                  itembuilder: (rw)=>Comment(senderid: (rw as TBComment).senderid, sender: '${(rw as TBComment).sender}', msg: '${(rw as TBComment).msg}', date: '${(rw as TBComment).date}')
+                                )
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(color: Colors.grey[200], height: 1),
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          SizedBox(width: 5),
+                          Expanded(child: Edit(hint: 'comment ...', controller: _edcom, onSubmitted: (val){_bloc.addComment(val); _edcom.clear();})),
+                          SizedBox(width: 5),
+                          FlatButton(child: Text('POST', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.lightBlue[900])), onPressed: (){_bloc.addComment(_edcom.text); _edcom.clear();})
+                        ],
+                      ),
+                      SizedBox(height: 10)
+                    ],
+                  ),
+                ) : Container()
+              ),
             ],
           ),
-          SizedBox(height: 15)
-        ],
-      ),
+        );
+      }
     );
   }
 }
