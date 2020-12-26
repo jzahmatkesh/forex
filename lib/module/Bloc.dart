@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'class.dart';
 import 'functions.dart';
@@ -409,4 +410,43 @@ class AnalyzeBloc extends Bloc{
   }
 }
 
+class AdminBloc{
+  BehaviorSubject<DataModel> _user = BehaviorSubject<DataModel>();
+  Stream<DataModel> get userStream$ => _user.stream;
+  User get currentUser => _user.value.rows !=null && _user.value.rows.length > 0 ? _user.value.rows[0] : null;
+
+  void authenticate(BuildContext context, String username, String pass) async{
+    _user.add(DataModel(status: Status.Loading));
+    Future.delayed(Duration(seconds: 3)).then((val) async {      
+      if (username == '2' && pass == '1'){
+        _user.add(DataModel(status: Status.Loaded, rows: [User(id: 1, name: 'Arman', family: 'Zahmatkesh', active: 1, email: 'info@Safa.Cloud', mobile: '5349268654', token: '4881229361')]));
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', currentUser.token);      
+      }
+      else{
+        _user.add(DataModel(status: Status.Error));
+        myAlert(context: context, title: 'Authenticate', message: 'username or password was wrong', msgType: Msg.Error);
+      }
+    });
+  }
+
+  void verifyUser(BuildContext context) async{
+      try{
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String token = prefs.getString('token') ?? '';
+        if (token.trim().isNotEmpty && token.trim() == "4881229361")
+          try{
+            _user.add(DataModel(status: Status.Loading));
+            Future.delayed(Duration(seconds: 1)).then((val){
+              _user.add(DataModel(status: Status.Loaded, rows: [User(id: 1, name: 'Arman', family: 'Zahmatkesh', active: 1, email: 'info@Safa.Cloud', mobile: '5349268654', token: '4881229361')]));
+            });
+          }
+          catch(e){
+            _user.add(DataModel(status: Status.Error));
+          }
+      }
+      catch(e){
+      }
+  }
+}
 

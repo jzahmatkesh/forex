@@ -99,7 +99,7 @@ void myAlert({@required BuildContext context,@required String title, @required d
     duration: Duration(seconds: second),
     builder: (_, controller) {
       return Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: TextDirection.ltr,
         child: Flash(
           backgroundColor: color ?? Colors.red,
           controller: controller,
