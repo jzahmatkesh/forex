@@ -306,26 +306,31 @@ class SignalBloc extends Bloc{
   
   loadData() async{
     rows.add(DataModel(status: Status.Loading));
-    Future.delayed(Duration(seconds: 1)).then((value){
-      rowsValue$.rows = [];
-      if (premium.value == 5){
-        if (kind.value == 1){
-          rowsValue$.rows.add(TBSignal(id: 2, namadid: 2, namad: 'AUDJPY', kind: 1, premium: false, title: 'wait to buy', senderid: 2,sender: 'Hasan Mazaheri', signalnumber: 19321, sl: 10.09, tp1: 9.12, tp2: 8.5, tp3: 7.34, vorod: 6.5, senddate: '2020/12/21 - 12:45 AM', closedate: '2020/12/21 - 18:45 PM', expdate: '2020/12/22 - 10:00 AM'));
-          rowsValue$.rows.add(TBSignal(id: 4, namadid: 1, namad: 'USDCHF', kind: 1, premium: false, title: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', signalnumber: 19753, sl: 10.09, tp1: 10.87, tp2: 11.5, tp3: 9.34, vorod: 11.5, senddate: '2020/12/21 - 16:45 PM', closedate: '', expdate: '2020/12/22 - 10:45 AM', liked: true, likes: 3));
-        }
-        if (kind.value == 2)
-        rowsValue$.rows.add(TBSignal(id: 1, namadid: 1, namad: 'USDCHF', kind: 2, premium: false, title: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', signalnumber: 19753, sl: 10.09, tp1: 10.87, tp2: 11.5, tp3: 9.34, vorod: 11.5, senddate: '2020/12/21 - 16:45 PM', closedate: '2020/12/21 - 23:45 PM', expdate: '2020/12/22 - 10:45 AM'));
-      }
-      if (premium.value == 6)
-        if (kind.value == 3)
-          rowsValue$.rows.add(TBSignal(id: 3, namadid: 3, namad: 'EURGBP', kind: 3, premium: true, title: 'wait to sell', senderid: 1,sender: 'Arman Zahmatkesh', signalnumber: 19921, sl: 0.87, tp1: 0.43, tp2: 0.1, tp3: 0.98, vorod: 0.05, senddate: '2020/12/21 - 12:45 AM', closedate: '2020/12/21 - 18:45 PM', expdate: '2020/12/22 - 10:00 AM'));
-      rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
-    });
+    
+    Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Signal&etoken=$token');
+    if (_data['msg'] == "Success")
+      rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBSignal>((data)=>TBSignal.fromJson(data)).toList()));
+
+    // Future.delayed(Duration(seconds: 1)).then((value){
+    //   rowsValue$.rows = [];
+    //   if (premium.value == 5){
+    //     if (kind.value == 1){
+    //       rowsValue$.rows.add(TBSignal(accountnumber: 2, symbol: 'AUDJPY', operationtype: 'update', premium: false, sender: 'Hasan Mazaheri', price: 19321, profit: 10.09, closeprice: 9.12, stoploss: 8.5, takeprofit: 7.34, size: 6.5, opentime: '2020/12/21 - 12:45 AM', closetime: '2020/12/21 - 18:45 PM', likes: 123, liked: true));
+    //       rowsValue$.rows.add(TBSignal(accountnumber: 4, symbol: 'USDCHF', operationtype: 'update', premium: false,  sender: 'Arman Zahmatkesh', price: 19753, profit: 10.09, closeprice: 10.87, stoploss: 11.5, takeprofit: 9.34, size: 11.5, opentime: '2020/12/21 - 16:45 PM', closetime: '', likes: 123, liked: false));
+    //     }
+    //     if (kind.value == 2)
+    //     rowsValue$.rows.add(TBSignal(accountnumber: 1, symbol: 'USDCHF', operationtype: 'update', premium: false,  sender: 'Arman Zahmatkesh', price: 19753, profit: 10.09, closeprice: 10.87, stoploss: 11.5, takeprofit: 9.34, size: 11.5, opentime: '2020/12/21 - 16:45 PM', closetime: '2020/12/21 - 23:45 PM', likes: 123, liked: false));
+    //   }
+    //   if (premium.value == 6)
+    //     if (kind.value == 3)
+    //       rowsValue$.rows.add(TBSignal(accountnumber: 3, symbol: 'EURGBP', operationtype: 'update', premium: true, sender: 'Arman Zahmatkesh', price: 19921, profit: 0.87, closeprice: 0.43, stoploss: 0.1, takeprofit: 0.98, size: 0.05, opentime: '2020/12/21 - 12:45 AM', closetime: '2020/12/21 - 18:45 PM', likes: 123, liked: false));
+    //   rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
+    // });
   }
 
   likeSignal(int id){
     rowsValue$.rows.forEach((element) {
-      if ((element as TBSignal).id == id){
+      if ((element as TBSignal).accountnumber == id){
         print('${(element as TBSignal).liked}');
         (element as TBSignal).liked = !(element as TBSignal).liked;
       }
@@ -414,32 +419,42 @@ class AdminBloc{
   BehaviorSubject<DataModel> _user = BehaviorSubject<DataModel>();
   Stream<DataModel> get userStream$ => _user.stream;
   User get currentUser => _user.value.rows !=null && _user.value.rows.length > 0 ? _user.value.rows[0] : null;
+  bool get isLogedIn => _user.value != null && _user.value.rows != null &&_user.value.rows.length > 0;
 
   void authenticate(BuildContext context, String username, String pass) async{
     _user.add(DataModel(status: Status.Loading));
-    Future.delayed(Duration(seconds: 3)).then((val) async {      
-      if (username == '2' && pass == '1'){
-        _user.add(DataModel(status: Status.Loaded, rows: [User(id: 1, name: 'Arman', family: 'Zahmatkesh', active: 1, email: 'info@Safa.Cloud', mobile: '5349268654', token: '4881229361')]));
+    
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Authenticate&email=$username&pass=${generateMd5(pass)}');
+      if (_data['msg'] == "Success"){
+        _user.add(DataModel(status: Status.Loaded, rows: _data['body'].map<User>((data) => User.fromJson(data)).toList()));
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', currentUser.token);      
+        await prefs.setString('token', currentUser.token);
       }
-      else{
-        _user.add(DataModel(status: Status.Error));
-        myAlert(context: context, title: 'Authenticate', message: 'username or password was wrong', msgType: Msg.Error);
-      }
-    });
+      else
+        throw Exception(_data['msg']);
+    }
+    catch(e){
+      myAlert(context: context, title: 'authenticate', message: '$e', msgType: Msg.Error);
+      _user.add(DataModel(status: Status.Error, msg: '$e'));
+    }
   }
 
   void verifyUser(BuildContext context) async{
       try{
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String token = prefs.getString('token') ?? '';
-        if (token.trim().isNotEmpty && token.trim() == "4881229361")
+        String token = await prefs.getString('token') ?? '';
+        if (token.trim().isNotEmpty)
           try{
             _user.add(DataModel(status: Status.Loading));
-            Future.delayed(Duration(seconds: 1)).then((val){
-              _user.add(DataModel(status: Status.Loaded, rows: [User(id: 1, name: 'Arman', family: 'Zahmatkesh', active: 1, email: 'info@Safa.Cloud', mobile: '5349268654', token: '4881229361')]));
-            });
+            Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Verify&token=$token');
+            if (_data['msg'] == "Success"){
+              _user.add(DataModel(status: Status.Loaded, rows: _data['body'].map<User>((data) => User.fromJson(data)).toList()));
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('token', currentUser.token);
+            }
+            else
+              throw Exception(_data['msg']);
           }
           catch(e){
             _user.add(DataModel(status: Status.Error));

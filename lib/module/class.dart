@@ -20,55 +20,62 @@ class DataModel{
 
 class User{
   int id;
-  String name;
   String family;
-  String regdate;
-  int type;
   String mobile;
   String email;
+  int accountnumber;
+  bool usermng;
+  bool analysis;  
+  bool subscription;
+  String regdate;
+  bool ticketmng;
   String instagram;
   String telegram;
-  String facebook;
   String whatsapp;
   String password;
-  String pic;
-  int active;
+  bool active;
+  int follower;
   String token;
 
-  User({this.id,this.name,this.family,this.regdate,this.type,this.mobile,this.email,this.instagram,this.telegram,this.facebook,this.whatsapp,this.password,this.pic,this.active, this.token});
+  User({this.id,this.family,this.regdate,this.mobile,this.email,this.instagram,this.telegram,this.whatsapp,this.password,this.active, this.accountnumber, this.analysis, this.subscription, this.ticketmng, this.usermng, this.token, this.follower});
 
   User.fromJson(Map<String, dynamic> json):
       id = json['id'],
-      name = json['name'],
       family = json['family'],
-      regdate = json['regdate'],
-      type = json['type'],
       mobile = json['mobile'],
       email = json['email'],
+      accountnumber = json['accountnumber'],
+      usermng = json['usermng'] == 1,
+      analysis = json['analysis'] == 1,
+      subscription = json['subscription'] == 1,
+      regdate = json['regdate'],
+      ticketmng = json['ticketmng'] == 1,
       instagram = json['instagram'],
       telegram = json['telegram'],
-      facebook = json['facebook'],
       whatsapp = json['whatsapp'],
       password = json['password'],
-      pic = json['pic'],
-      active = json['active'];
+      follower = json['follower'],
+      active = json['active'] == 1,
+      token = json['token'];
 
   Map<String, dynamic> toJson(){
       final Map<String, dynamic> data = new Map<String, dynamic>();
       data['id'] = this.id;
-      data['name'] = this.name;
       data['family'] = this.family;
-      data['regdate'] = this.regdate;
-      data['type'] = this.type;
       data['mobile'] = this.mobile;
       data['email'] = this.email;
+      data['accountnumber'] = this.accountnumber;
+      data['usermng'] = this.usermng ? 1 : 0;
+      data['analysis'] = this.analysis ? 1 : 0;
+      data['subscription'] = this.subscription ? 1 : 0;
+      data['regdate'] = this.regdate;
+      data['ticketmng'] = this.ticketmng ? 1 : 0;
       data['instagram'] = this.instagram;
       data['telegram'] = this.telegram;
-      data['facebook'] = this.facebook;
       data['whatsapp'] = this.whatsapp;
       data['password'] = this.password;
-      data['pic'] = this.pic;
-      data['active'] = this.active;
+      data['follower'] = follower;
+      data['active'] = this.active ? 1 : 0;
       data['token'] = this.token;
       return data;
   }
@@ -145,86 +152,72 @@ class TBAnalyze{
 }
 
 class TBSignal{
-  int id;
-  int namadid;
-  String namad;
-  double vorod;
-  double tp1;
-  double tp2;
-  double tp3;
-  double sl;
-  int senderid;
-  String sender;
-  String senddate;
-  String expdate;
-  String title;
-  int kind;
-    //1=1 hour, 2=4 hour, 3=daily, 4=weekly
-  String note;
-  bool premium;
-  bool liked;
-  int likes;
-  double signalnumber;
-  String udate;
-  String unote;
-  String closedate;
-  String closenote;
-  String token;
-
-  TBSignal({this.id,this.namadid,this.namad,this.vorod,this.tp1,this.tp2,this.tp3,this.sl,this.senderid,this.sender,this.senddate,this.expdate,this.title,this.kind,this.note,this.premium = false,this.signalnumber,this.udate,this.unote,this.closedate,this.closenote, this.token, this.liked = false, this.likes = 0});
-
-  TBSignal.fromJson(Map<String, dynamic> json):
-      id = json['id'],
-      namadid = json['namadid'],
-      namad = json['namad'],
-      vorod = json['vorod'],
-      tp1 = json['tp1'],
-      tp2 = json['tp2'],
-      tp3 = json['tp3'],
-      sl = json['sl'],
-      senderid = json['senderid'],
-      sender = json['sender'],
-      senddate = json['senddate'],
-      expdate = json['expdate'],
-      title = json['title'],
-      kind = json['kind'],
-      note = json['note'],
-      premium = json['premium'] == 1,
-      signalnumber = json['signalnumber'],
-      udate = json['udate'],
-      unote = json['unote'],
-      closedate = json['closedate'],
-      likes = json['likes'],
-      liked = json['liked'] == 1,
-      closenote = json['closenote'];
-
-  Map<String, dynamic> toJson(){
-      final Map<String, dynamic> data = new Map<String, dynamic>();
-      data['id'] = this.id;
-      data['namadid'] = this.namadid;
-      data['namad'] = this.namad;
-      data['vorod'] = this.vorod;
-      data['tp1'] = this.tp1;
-      data['tp2'] = this.tp2;
-      data['tp3'] = this.tp3;
-      data['sl'] = this.sl;
-      data['sender'] = this.sender;
-      data['senddate'] = this.senddate;
-      data['expdate'] = this.expdate;
-      data['title'] = this.title;
-      data['kind'] = this.kind;
-      data['note'] = this.note;
-      data['premium'] = this.premium ? 1 : 0;
-      data['signalnumber'] = this.signalnumber;
-      data['udate'] = this.udate;
-      data['unote'] = this.unote;
-      data['closedate'] = this.closedate;
-      data['closenote'] = this.closenote;
-      data['token'] = this.token;
-      return data;
-  }
+    String accountname;
+    bool premium;
+    int accountnumber;
+    String sender;
+    String operationtype;
+    int ticket;
+    String opentime;
+    String type;
+    double size;
+    String symbol;
+    double price;
+    double stoploss;
+    double takeprofit;
+    double closeprice;
+    String closetime;
+    double profit;
+    int likes;
+    bool liked;
+    String token;
+ 
+    TBSignal({this.accountname,this.premium,this.accountnumber,this.sender,this.operationtype,this.ticket,this.opentime,this.type,this.size,this.symbol,this.price,this.stoploss,this.takeprofit,this.closeprice,this.closetime,this.profit,this.likes,this.liked, this.token});
+ 
+    TBSignal.fromJson(Map<String, dynamic> json):
+        accountname = json['accountname'],
+        premium = json['premium'] == 1,
+        accountnumber = json['accountnumber'],
+        sender = json['sender'],
+        operationtype = json['operationtype'],
+        ticket = json['ticket'],
+        opentime = json['opentime'],
+        type = json['type'],
+        size = json['size'],
+        symbol = json['symbol'],
+        price = json['price'],
+        stoploss = json['stoploss'],
+        takeprofit = json['takeprofit'],
+        closeprice = json['closeprice'],
+        closetime = json['closetime'],
+        profit = json['profit'],
+        likes = json['likes'],
+        liked = json['liked'] == 1;
+ 
+    Map<String, dynamic> toJson(){
+        final Map<String, dynamic> data = new Map<String, dynamic>();
+        data['accountname'] = this.accountname;
+        data['premium'] = this.premium ? 1 : 0;
+        data['accountnumber'] = this.accountnumber;
+        data['sender'] = this.sender;
+        data['operationtype'] = this.operationtype;
+        data['ticket'] = this.ticket;
+        data['opentime'] = this.opentime;
+        data['type'] = this.type;
+        data['size'] = this.size;
+        data['symbol'] = this.symbol;
+        data['price'] = this.price;
+        data['stoploss'] = this.stoploss;
+        data['takeprofit'] = this.takeprofit;
+        data['closeprice'] = this.closeprice;
+        data['closetime'] = this.closetime;
+        data['profit'] = this.profit;
+        data['likes'] = this.likes;
+        data['liked'] = this.liked ? 1: 0;
+        data['token'] = this.token;
+        return data;
+    }
 }
-
 class TBComment{
   int senderid;
   String sender;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../module/Bloc.dart';
 import '../module/Widgets.dart';
@@ -190,7 +191,7 @@ class SignalInfo extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                 child: Row(
                   children: [
-                    CircleAvatar(backgroundImage: AssetImage('images/user${sig.senderid}.jpg'), radius: 25,),
+                    CircleAvatar(backgroundImage: AssetImage('images/user${sig.accountnumber}.jpg'), radius: 25,),
                     SizedBox(width: 15),
                     Container(
                       decoration: BoxDecoration(
@@ -198,12 +199,12 @@ class SignalInfo extends StatelessWidget {
                         color: Colors.yellowAccent
                       ),
                       padding: EdgeInsets.all(8),
-                      child: Text('${sig.namad}')
+                      child: Text('${sig.symbol}', style: GoogleFonts.tajawal(fontSize: 28, fontWeight: FontWeight.bold))
                     ),
-                    SizedBox(width: 15),
-                    Text('${sig.title}', style: TextStyle(fontWeight: FontWeight.bold)),
+                    // SizedBox(width: 15),
+                    // Text('${sig.title}', style: TextStyle(fontWeight: FontWeight.bold)),
                     Spacer(),
-                    Text('${sig.senddate}', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('${sig.opentime}', style: TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -212,8 +213,8 @@ class SignalInfo extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('start at ${sig.vorod}'),
-                    Text('sale: ${sig.sl}'),
+                    Text('start at ${sig.opentime}'),
+                    // Text('sale: ${sig.stoploss}'),
                   ],
                 ),
               ),
@@ -222,9 +223,9 @@ class SignalInfo extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('pointt1: ${sig.tp1}'),
-                    Text('pointt2: ${sig.tp2}'),
-                    Text('pointt2: ${sig.tp3}'),
+                    Text('price: ${sig.price}'),
+                    Text('stoploss: ${sig.stoploss}'),
+                    Text('profit: ${sig.profit}'),
                   ],
                 ),
               ),
@@ -234,11 +235,11 @@ class SignalInfo extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    IButton(icon: Icon(sig.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, size: 20, color: sig.liked ? Colors.red :  null), hint: 'Like', onPressed: ()=>_bloc.likeSignal(sig.id)),
+                    IButton(icon: Icon(sig.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, size: 20, color: sig.liked ? Colors.red :  null), hint: 'Like', onPressed: ()=>_bloc.likeSignal(sig.accountnumber)),
                     SizedBox(width: 5),
                     Container(child: Text('${sig.likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10),),
                     SizedBox(width: 75),
-                    IButton(icon: Icon(FontAwesomeIcons.commentAlt, size: 20, color: Colors.grey), hint: 'comment', onPressed: (){_comment.setValue(_comment.value==0 ? 1 : 0); _bloc.loadComment(this.sig.id);})
+                    IButton(icon: Icon(FontAwesomeIcons.commentAlt, size: 20, color: Colors.grey), hint: 'comment', onPressed: (){_comment.setValue(_comment.value==0 ? 1 : 0); _bloc.loadComment(this.sig.accountnumber);})
                   ],
                 ),
               ),

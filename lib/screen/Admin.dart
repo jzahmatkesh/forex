@@ -19,6 +19,8 @@ class Admin extends StatelessWidget{
   Widget build(BuildContext context) {
     if (_bloc == null) 
       _bloc = AdminBloc()..verifyUser(context);
+    if (!_bloc.isLogedIn)
+      _bloc.verifyUser(context);      
     TextEditingController _edusr = TextEditingController();
     TextEditingController _edpss = TextEditingController();
     return Scaffold(
@@ -72,7 +74,11 @@ class AdminPage extends StatelessWidget {
                     return Column(
                       children: [
                         SizedBox(height: 25),
-                        CircleAvatar(backgroundImage: AssetImage('images/user2.jpg'), radius: 45,),
+                        CircleAvatar(backgroundImage: AssetImage('images/user${_bloc.currentUser.id}.jpg'), radius: 45,),
+                        SizedBox(height: 10),
+                        Text('${_bloc.currentUser.family}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
+                        SizedBox(height: 5),
+                        Text('Followers    ${_bloc.currentUser.follower}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
                         SizedBox(height: 10),
                         FlatButton(child: Text('edit profile', style: TextStyle(fontSize: 12, color: Colors.blueGrey)), onPressed: (){}),
                         SizedBox(height: 15),
@@ -96,6 +102,7 @@ class AdminPage extends StatelessWidget {
               padding: const EdgeInsets.all(24.0),
               child: StreamBuilder(
                 stream: _menu.stream$,
+                initialData: 1,
                 builder: (context, snapshot){
                   if (snapshot.hasData)
                     if (snapshot.data == 1)
@@ -192,12 +199,12 @@ class AdminSignal extends StatelessWidget {
           [
             Field(Text('Active')),
             Field(SizedBox(width: 45)),
-            Field('namad'),
-            Field('title'),
+            Field('symbol'),
+            // Field('title'),
             Field('sender'),
-            Field('send date'),
+            Field('open date'),
             Field('likes'),
-            Field('vorod'),
+            Field('price'),
           ],
           header: true,
         ),
@@ -208,14 +215,14 @@ class AdminSignal extends StatelessWidget {
               [
                 Field(Checkbox(value: true, onChanged: (val){})),
                 Field(SizedBox(width: 10)),
-                Field(CircleAvatar(backgroundImage: AssetImage('images/user${(rw as TBSignal).senderid}.jpg'),)),
+                Field(CircleAvatar(backgroundImage: AssetImage('images/user${(rw as TBSignal).accountnumber}.jpg'),)),
                 Field(SizedBox(width: 25)),
-                Field('${(rw as TBSignal).namad}'),
-                Field('${(rw as TBSignal).title}'),
+                Field('${(rw as TBSignal).symbol}'),
+                // Field('${(rw as TBSignal).title}'),
                 Field('${(rw as TBSignal).sender}'),
-                Field('${(rw as TBSignal).senddate}'),
+                Field('${(rw as TBSignal).opentime}'),
                 Field('${(rw as TBSignal).likes}'),
-                Field('${(rw as TBSignal).vorod}'),
+                Field('${(rw as TBSignal).price}'),
               ],
               color: _signalBloc.rowsValue$.rows.indexOf(rw).isOdd ? rowColor(context) : Colors.transparent,
             ),
@@ -298,7 +305,9 @@ class AdminAnalyze extends StatelessWidget {
                   underline: Container(),
                 ),
               ),
-            )
+            ),
+            Spacer(),
+            IButton(icon: FaIcon(FontAwesomeIcons.solidPlusSquare), hint: 'new analyze', onPressed: ()=>showFormAsDialog(context: context, form: NewAnalyze(rec: TBAnalyze(id: 0))))
           ],
         ),
         SizedBox(height: 35),
@@ -350,5 +359,34 @@ class AdminAnalyze extends StatelessWidget {
   }
 }
 
+class NewAnalyze extends StatelessWidget {
+  const NewAnalyze({Key key, @required this.rec}) : super(key: key);
+
+  final TBAnalyze rec;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: screenWidth(context) * 0.65,
+      padding: EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Header(title: 'analyze info', rightBtn: IButton(type: Btn.Save, onPressed: (){})),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: Edit(hint: 'subject')),
+              SizedBox(width: 10),
+              Expanded(child: Edit(hint: 'expire date')),
+            ]
+          ),
+          SizedBox(height: 15),
+          Edit(hint: 'note', maxlines: 10),
+        ]
+      ),
+    );
+  }
+}
 
 

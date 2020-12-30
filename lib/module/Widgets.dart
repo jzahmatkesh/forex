@@ -54,7 +54,7 @@ class IButton extends StatelessWidget {
   
   final Btn type;
   final String hint;
-  final Icon icon;
+  final Widget icon;
   final VoidCallback onPressed;
   final double size;
 
@@ -77,8 +77,8 @@ class IButton extends StatelessWidget {
                 ? 'ویرایش'
                 : '';
 
-    Icon _icon = icon != null
-      ? Icon(this.icon.icon, size: this.size, color: this.icon.color)
+    Widget _icon = icon != null
+      ? this.icon//Icon(this.icon.icon, size: this.size, color: this.icon.color)
       : type == Btn.Add
         ? Icon(FontAwesomeIcons.solidPlusSquare, size: this.size)
         : type == Btn.Del
@@ -370,7 +370,7 @@ class MoneyTextFormatter extends TextInputFormatter {
 }
 
 class Edit extends StatelessWidget {
-  const Edit({Key key, this.value, this.onChange, this.controller, this.onSubmitted, this.autofocus = false, this.hint, this.password = false, this.focus, this.date=false, this.money=false, this.numbersonly=false, this.timeonly=false, this.readonly = false, this.onEditingComplete, this.maxlength, this.f2key, this.f2value, this.notempty=false, this.validator}) : super(key: key);
+  const Edit({Key key, this.value, this.onChange, this.controller, this.onSubmitted, this.autofocus = false, this.hint, this.password = false, this.focus, this.date=false, this.money=false, this.numbersonly=false, this.timeonly=false, this.readonly = false, this.onEditingComplete, this.maxlength, this.f2key, this.f2value, this.notempty=false, this.validator, this.maxlines = 1}) : super(key: key);
 
   final bool autofocus;
   final String value;
@@ -390,6 +390,7 @@ class Edit extends StatelessWidget {
   final String f2key;
   final dynamic f2value;
   final bool notempty;
+  final int maxlines;
   final Function(String) validator;
 
   @override
@@ -397,6 +398,7 @@ class Edit extends StatelessWidget {
     if (controller != null && controller.text.isEmpty)
       controller.text = this.value ?? '';
     return TextFormField(
+      maxLines: this.maxlines,
       readOnly: this.readonly,
       autofocus: this.autofocus,
       controller: this.controller ?? TextEditingController(text: this.value ?? ''),
@@ -750,25 +752,25 @@ class SignalItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: !rw.closedate.isEmpty ? Colors.red.withOpacity(0.05) : null,
+      color: !rw.closetime.isEmpty ? Colors.red.withOpacity(0.05) : null,
       child: ListTile(
-        leading: CircleAvatar(backgroundImage: AssetImage('images/user${rw.senderid}.jpg')),
+        leading: CircleAvatar(backgroundImage: AssetImage('images/user${rw.accountnumber}.jpg')),
         title: Row(
           children: [
-            Text(rw.namad),
+            Text(rw.symbol),
             SizedBox(width: 5),
-            Text(' - ${rw.title}', style: TextStyle(fontWeight: FontWeight.bold),)
+            // Text(' - ${rw.title}', style: TextStyle(fontWeight: FontWeight.bold),)
           ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${rw.senddate}'),
+            Text('${rw.opentime}'),
             SizedBox(width: 10),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IButton(icon: Icon(rw.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, size: 20, color: rw.liked ? Colors.red :  null,), hint: 'Like', onPressed: ()=>bloc.likeSignal(rw.id)),
+                IButton(icon: Icon(rw.liked ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp, size: 20, color: rw.liked ? Colors.red :  null,), hint: 'Like', onPressed: ()=>bloc.likeSignal(rw.accountnumber)),
                 SizedBox(width: 5),
                 Container(child: Text('${rw.likes}', style: TextStyle(color: Colors.grey)), margin: EdgeInsets.only(top: 10))
               ],

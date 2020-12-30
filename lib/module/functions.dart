@@ -46,11 +46,11 @@ String serverIP(){
 Future<Map<String, dynamic>> postToServer({String api, dynamic body, Map<String,String> header}) async{
     if (header == null)
       header = {'Content-Type': 'application/json'};
-    var res = await http.post("http://${serverIP()}:8080/Finance/api/$api", headers: header, body: body);
+    var res = await http.post("$api");
     if(res.statusCode == 200)
       return {"msg": "Success", "body": json.decode(utf8.decode(res.bodyBytes))};
     else
-      return json.decode(utf8.decode(res.bodyBytes));
+      return {"msg": json.decode(utf8.decode(res.bodyBytes))[0]['msg']};
 }
 
 Future<Map<String, dynamic>> putToServer({String api, dynamic body, Map<String,String> header}) async{
