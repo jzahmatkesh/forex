@@ -467,6 +467,26 @@ class AnalyzeBloc extends Bloc{
     comments.rowsValue$.rows.add(TBComment(senderid: 1, sender: 'me', msg: msg, date: 'now'));
     comments.reload();
   }
+
+  saveAnalyze(BuildContext context, TBAnalyze analyze) async{
+    if (analyze.subject.isEmpty)
+      myAlert(context: context, title: 'error', message: 'title cannot be empty');
+    else if (analyze.note.isEmpty)
+      myAlert(context: context, title: 'error', message: 'note cannot be empty');
+    else
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=SaveAnalyze&token=$token&${analyze.toString()}');
+      if (_data['msg'] == "Success"){
+        loadData();
+        Navigator.of(context).pop();
+      }
+      else
+        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+    }
+    catch(e){
+      myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+    }
+  }
 }
 
 class SubscribeBloc extends Bloc{

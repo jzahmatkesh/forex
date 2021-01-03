@@ -104,13 +104,12 @@ class TBAnalyze{
     //1=up, 2=down
   bool liked;
   int likes;
-  int namadid;
-  String namad;
+  String symbol;
   String senddate;
   String expiredate;
   String token;
 
-  TBAnalyze({this.id,this.smallpic,this.bigpic,this.note,this.subject,this.premium,this.kind,this.senderid,this.sender,this.status,this.namadid,this.namad,this.senddate,this.expiredate, this.liked=false, this.likes=0, this.token});
+  TBAnalyze({this.id,this.smallpic,this.bigpic,this.note,this.subject,this.premium,this.kind,this.senderid,this.sender,this.status,this.symbol,this.senddate,this.expiredate, this.liked=false, this.likes=0, this.token});
 
   TBAnalyze.fromJson(Map<String, dynamic> json):
       id = json['id'],
@@ -125,8 +124,7 @@ class TBAnalyze{
       liked = json['liked'] == 1,
       likes = json['likes'],
       status = json['status'],
-      namadid = json['namadid'],
-      namad = json['namad'],
+      symbol = json['symbol'],
       senddate = json['senddate'],
       expiredate = json['expiredate'];
 
@@ -142,12 +140,15 @@ class TBAnalyze{
       data['senderid'] = this.senderid;
       data['sender'] = this.sender;
       data['status'] = this.status;
-      data['namadid'] = this.namadid;
-      data['namad'] = this.namad;
+      data['symbol'] = this.symbol;
       data['senddate'] = this.senddate;
       data['expiredate'] = this.expiredate;
       data['token'] = this.token;
       return data;
+  }
+
+  String toString(){
+    return "id=${this.id}&title=${this.subject}&symbol=${this.symbol}&kind=${this.kind}&status=${this.status}&premium=${this.premium}&expire=${this.expiredate}&note=${this.note}";
   }
 }
 

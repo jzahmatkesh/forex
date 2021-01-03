@@ -196,7 +196,7 @@ class AnalyzeInfo extends StatelessWidget {
               SizedBox(height: 15),
               Row(
                 children: [
-                  Text('${rw.namad}', style: GoogleFonts.tajawal(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('${rw.symbol}', style: GoogleFonts.tajawal(fontSize: 18, fontWeight: FontWeight.bold)),
                   SizedBox(width: 10),
                   Icon(rw.status ==1 ? Icons.trending_up : Icons.trending_down, color: rw.status ==1 ? Colors.green : Colors.deepOrange),
                 ],

@@ -324,7 +324,8 @@ class AdminAnalyze extends StatelessWidget {
               ),
             ),
             Spacer(),
-            IButton(icon: FaIcon(FontAwesomeIcons.solidPlusSquare), hint: 'new analyze', onPressed: ()=>showFormAsDialog(context: context, form: NewAnalyze(rec: TBAnalyze(id: 0))))
+            IButton(type: Btn.Reload, onPressed: ()=>_analyzeBloc.loadData()),
+            IButton(type: Btn.Add, hint: 'new analyze', onPressed: ()=>showFormAsDialog(context: context, form: NewAnalyze(rec: TBAnalyze(id: 0)))),
           ],
         ),
         SizedBox(height: 35),
@@ -391,13 +392,17 @@ class NewAnalyze extends StatelessWidget {
     FocusNode _fsubject = FocusNode();
     FocusNode _fexpire = FocusNode();
     FocusNode _fnote = FocusNode();
+    StringBloc _symbol = StringBloc()..setValue(rec.symbol  ?? 'EUR/USD');
+    IntBloc _kind = IntBloc()..setValue(rec.kind ?? 1);
+    IntBloc _status = IntBloc()..setValue(rec.status ?? 1);
+    IntBloc _premium = IntBloc()..setValue((rec.premium ?? false) ? 1 : 0);
     return Container(
       width: screenWidth(context) * 0.65,
       padding: EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Header(title: 'analyze info', rightBtn: IButton(type: Btn.Save, onPressed: (){})),
+          Header(title: 'analyze info', rightBtn: IButton(type: Btn.Save, onPressed: ()=>_analyzeBloc.saveAnalyze(context, TBAnalyze(id: rec.id, subject: _edsubject.text, kind: _kind.value, status: _status.value, premium: _premium.value==1, symbol: _symbol.value, expiredate: _edexpire.text, note: _ednote.text)))),
           SizedBox(height: 10),
           Row(
             children: [
@@ -407,6 +412,82 @@ class NewAnalyze extends StatelessWidget {
             ]
           ),
           SizedBox(height: 15),
+          Row(
+            children: [
+              SizedBox(width: 5),
+              Expanded(child: Card(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 25),
+                  child: StreamWidget(
+                    stream: _symbol.stream$,
+                    itemBuilder: (str)=>DropdownButton<String>(
+                      value: '$str',
+                      items: [
+                        DropdownMenuItem(value: 'EUR/USD', child: Text('EUR/USD')),
+                        DropdownMenuItem(value: 'GBP/USD', child: Text('GBP/USD')),
+                        DropdownMenuItem(value: 'USD/JPY', child: Text('USD/JPY')),
+                        DropdownMenuItem(value: 'USD/CHF', child: Text('USD/CHF')),
+                        DropdownMenuItem(value: 'USD/CAD', child: Text('USD/CAD')),
+                        DropdownMenuItem(value: 'AUD/USD', child: Text('AUD/USD')),
+                        DropdownMenuItem(value: 'NZD/USD', child: Text('NZD/USD')),
+                      ],
+                      onChanged: (val)=>_symbol.setValue(val),
+                      underline: Container(),
+                    )
+                  ),
+                ),
+              )),
+              SizedBox(width: 5),
+              Expanded(child: Card(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 25),
+                  child: StreamWidget(
+                    stream: _kind.stream$,
+                    itemBuilder: (val)=>DropdownButton<int>(
+                      value: val,
+                      items: [
+                        DropdownMenuItem(value: 1, child: Text('1 HOUR')),
+                        DropdownMenuItem(value: 2, child: Text('4 HOUR')),
+                        DropdownMenuItem(value: 3, child: Text('Daily')),
+                        DropdownMenuItem(value: 4, child: Text('Weekly')),
+                      ],
+                      onChanged: (val)=>_kind.setValue(val),
+                      underline: Container(),
+                    )
+                  ),
+                ),
+              )),
+              SizedBox(width: 5),
+              Expanded(child: Card(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 25),
+                  child: StreamWidget(
+                    stream: _status.stream$,
+                    itemBuilder: (val)=>DropdownButton<int>(
+                      value: val,
+                      items: [
+                        DropdownMenuItem(value: 1, child: Text('UP')),
+                        DropdownMenuItem(value: 2, child: Text('Down')),
+                      ],
+                      onChanged: (val)=>_status.setValue(val),
+                      underline: Container(),
+                    )
+                  ),
+                ),
+              )),
+              SizedBox(width: 5),
+              Expanded(child: Row(
+                children: [
+                  StreamWidget(
+                    stream: _premium.stream$,
+                    itemBuilder: (i)=>Checkbox(value: i==1, onChanged: (val)=>_premium.setValue(val ? 1 : 0))
+                  ),
+                  SizedBox(width: 5),
+                  Text('Premium'),
+                ],
+              )),
+            ]
+          ),
           Edit(hint: 'note', maxlines: 10, controller: _ednote, focus: _fnote),
         ]
       ),
