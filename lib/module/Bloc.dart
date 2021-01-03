@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,6 +16,16 @@ class IntBloc{
   int get value => _value.value;
 
   setValue(int i)=>_value.add(i);
+}
+
+class StringBloc{
+  StringBloc();
+
+  BehaviorSubject<String> _value = BehaviorSubject<String>();
+  Stream<String> get stream$ => _value.stream;
+  String get value => _value.value;
+
+  setValue(String i)=>_value.add(i);
 }
 
 class ExcelBloc{
@@ -74,20 +85,13 @@ abstract class Bloc{
   //   try{
   //     Future.delayed(Duration.zero, () => showWaiting(context));
   //     try{
-  //       _rows.add(DataModel(status: Status.Loading));
-  //       if (this.body == null)
-  //         this.body = {'token': token};
-  //       else
-  //         this.body.putIfAbsent('token', () => token);
-  //       Map<String, dynamic> _data = await postToServer(api: '$api', body: jsonEncode(body));
-  //       if (_data['msg'] == "Success"){
-  //         _rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<Mainclass>((data) => Mainclass.fromJson(json.decode(data))).toList()));
+  //       rows.add(DataModel(status: Status.Loading));
+  //       Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=$api&token=$token');
+  //       if (_data['msg'] == "Success")
+  //         rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBSignal>((data)=>TBSignal.fromJson(data)).toList()));
   //       }
-  //       else
-  //         throw Exception(_data['msg']);
-  //     }
   //     catch(e){
-  //       _rows.add(DataModel(status: Status.Error, msg: '$e'));
+  //       rows.add(DataModel(status: Status.Error));
   //     }
   //   }
   //   finally{
@@ -293,39 +297,44 @@ class PublicBloc extends Bloc{
   PublicBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body);
 }
 
+class SymbolBloc extends Bloc{
+  loadData() async{
+    try{
+      rows.add(DataModel(status: Status.Loading));
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=symbol');
+      if (_data['msg'] == "Success")
+        rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<String>((data)=>'${data['symbol']}').toList()));
+      else
+        rows.add(DataModel(status: Status.Loaded, rows: []));
+      }
+    catch(e){
+      rows.add(DataModel(status: Status.Error, msg: '$e'));
+    }
+  }  
+}
+
 class SignalBloc extends Bloc{
   SignalBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body){
     this.loadData();
   }
 
   PublicBloc comments;
-  IntBloc kind = IntBloc()..setValue(1);
-  IntBloc premium = IntBloc()..setValue(5);
   IntBloc sort = IntBloc()..setValue(1);
+  IntBloc kind = IntBloc()..setValue(1);
+  StringBloc symbol = StringBloc()..setValue('All');
+  IntBloc premium = IntBloc()..setValue(5);
 
   
   loadData() async{
-    rows.add(DataModel(status: Status.Loading));
-    
-    Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Signal&etoken=$token');
-    if (_data['msg'] == "Success")
-      rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBSignal>((data)=>TBSignal.fromJson(data)).toList()));
-
-    // Future.delayed(Duration(seconds: 1)).then((value){
-    //   rowsValue$.rows = [];
-    //   if (premium.value == 5){
-    //     if (kind.value == 1){
-    //       rowsValue$.rows.add(TBSignal(accountnumber: 2, symbol: 'AUDJPY', operationtype: 'update', premium: false, sender: 'Hasan Mazaheri', price: 19321, profit: 10.09, closeprice: 9.12, stoploss: 8.5, takeprofit: 7.34, size: 6.5, opentime: '2020/12/21 - 12:45 AM', closetime: '2020/12/21 - 18:45 PM', likes: 123, liked: true));
-    //       rowsValue$.rows.add(TBSignal(accountnumber: 4, symbol: 'USDCHF', operationtype: 'update', premium: false,  sender: 'Arman Zahmatkesh', price: 19753, profit: 10.09, closeprice: 10.87, stoploss: 11.5, takeprofit: 9.34, size: 11.5, opentime: '2020/12/21 - 16:45 PM', closetime: '', likes: 123, liked: false));
-    //     }
-    //     if (kind.value == 2)
-    //     rowsValue$.rows.add(TBSignal(accountnumber: 1, symbol: 'USDCHF', operationtype: 'update', premium: false,  sender: 'Arman Zahmatkesh', price: 19753, profit: 10.09, closeprice: 10.87, stoploss: 11.5, takeprofit: 9.34, size: 11.5, opentime: '2020/12/21 - 16:45 PM', closetime: '2020/12/21 - 23:45 PM', likes: 123, liked: false));
-    //   }
-    //   if (premium.value == 6)
-    //     if (kind.value == 3)
-    //       rowsValue$.rows.add(TBSignal(accountnumber: 3, symbol: 'EURGBP', operationtype: 'update', premium: true, sender: 'Arman Zahmatkesh', price: 19921, profit: 0.87, closeprice: 0.43, stoploss: 0.1, takeprofit: 0.98, size: 0.05, opentime: '2020/12/21 - 12:45 AM', closetime: '2020/12/21 - 18:45 PM', likes: 123, liked: false));
-    //   rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
-    // });
+    try{
+      rows.add(DataModel(status: Status.Loading));
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Signal&token=$token&sort=${sort.value}&');
+      if (_data['msg'] == "Success")
+        rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBSignal>((data)=>TBSignal.fromJson(data)).toList()));
+      }
+    catch(e){
+      rows.add(DataModel(status: Status.Error));
+    }
   }
 
   likeSignal(int id){
@@ -356,6 +365,41 @@ class SignalBloc extends Bloc{
     comments.rowsValue$.rows.add(TBComment(senderid: 1, sender: 'me', msg: msg, date: 'now'));
     comments.reload();
   }
+
+  saveData(BuildContext context, TBSignal signal) async{
+    if (signal.symbol ==  "choose symbol ...")
+      myAlert(context: context, title: 'error', message: 'symbol not selected');
+    else
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=SaveSignal&token=$token&${signal.toString()}');
+      if (_data['msg'] == "Success"){
+        loadData();
+        Navigator.of(context).pop();
+      }
+      else
+        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+    }
+    catch(e){
+      myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+    }
+  }
+
+  delSignal(BuildContext context, int ticket, String symbol){
+    confirmMessage(context, 'delete', 'are you sure to delete $symbol ?', yesclick: () async{
+      try{
+        Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=DelSignal&token=$token&ticket=$ticket');
+        if (_data['msg'] == "Success"){
+          loadData();
+          Navigator.of(context).pop();
+        }
+        else
+          myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+      }
+      catch(e){
+        myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+      }
+    });
+  }
 }
 
 class AnalyzeBloc extends Bloc{
@@ -369,22 +413,32 @@ class AnalyzeBloc extends Bloc{
   IntBloc sort = IntBloc()..setValue(1);
 
   loadData() async{
-    rows.add(DataModel(status: Status.Loading));
-    Future.delayed(Duration(seconds: 1)).then((value){
-      rowsValue$.rows = [];
-      if (premium.value == 5){
-        if (kind.value == 1){
-          rowsValue$.rows.add(TBAnalyze(id: 2, namadid: 2, namad: 'AUDJPY', kind: 1, premium: false, subject: 'BTC shorts to retest previous ATH', senderid: 2,sender: 'ForexThief', senddate: 'Dec 19', smallpic: 'https://s3.tradingview.com/u/U75x1Cne_mid.png', bigpic: 'https://a.c-dn.net/b/0ZRBLH/types-of-forex-analysis_body_GBPUSD-chart-in-forex-analysis-techniques.png', expiredate: '2020/12/25', note: 'Always against the crowd.. You called me crazy on previous analysis to long from 5k Now we here. Consolidation box... Need to retest 20k soon', status: 1));
-          rowsValue$.rows.add(TBAnalyze(id: 4, namadid: 1, namad: 'USDCHF', kind: 1, premium: false, subject: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 16:45 PM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: 'BTC Update Since last few days we saw 7 continuous daily green candles on bitcoin & For strong growth ahead bitcoin needs some correction. Currently Market is entering in blow-off phase and As Bitcoin is forming similar pattern & fractals like last blow off phase so we are expecting a correction. No one knows exactly where it is going to top but based on our analysis there is possibility of \$23k - \$25k and then correction midterm to following targets \$18k - \$15k - \$12k. Expecting bearish move to start next week starting 21st of December.', status: 2));
-        }
-        if (kind.value == 2)
-        rowsValue$.rows.add(TBAnalyze(id: 1, namadid: 1, namad: 'USDCHF', kind: 2, premium: false, subject: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 16:45 PM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: '', status: 1));
+    try{
+      rows.add(DataModel(status: Status.Loading));
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Analyze&etoken=$token');
+      if (_data['msg'] == "Success")
+        rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBAnalyze>((data)=>TBAnalyze.fromJson(data)).toList()));
       }
-      if (premium.value == 6)
-        if (kind.value == 3)
-          rowsValue$.rows.add(TBAnalyze(id: 3, namadid: 3, namad: 'EURGBP', kind: 3, premium: true, subject: 'wait to sell', senderid: 1,sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 12:45 AM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: '', status: 2));
-      rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
-    });
+    catch(e){
+      print('error: $e');
+      rows.add(DataModel(status: Status.Error, msg: '$e'));
+    }
+    // rows.add(DataModel(status: Status.Loading));
+    // Future.delayed(Duration(seconds: 1)).then((value){
+    //   rowsValue$.rows = [];
+    //   if (premium.value == 5){
+    //     if (kind.value == 1){
+    //       rowsValue$.rows.add(TBAnalyze(id: 2, namadid: 2, namad: 'AUDJPY', kind: 1, premium: false, subject: 'BTC shorts to retest previous ATH', senderid: 2,sender: 'ForexThief', senddate: 'Dec 19', smallpic: 'https://s3.tradingview.com/u/U75x1Cne_mid.png', bigpic: 'https://a.c-dn.net/b/0ZRBLH/types-of-forex-analysis_body_GBPUSD-chart-in-forex-analysis-techniques.png', expiredate: '2020/12/25', note: 'Always against the crowd.. You called me crazy on previous analysis to long from 5k Now we here. Consolidation box... Need to retest 20k soon', status: 1));
+    //       rowsValue$.rows.add(TBAnalyze(id: 4, namadid: 1, namad: 'USDCHF', kind: 1, premium: false, subject: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 16:45 PM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: 'BTC Update Since last few days we saw 7 continuous daily green candles on bitcoin & For strong growth ahead bitcoin needs some correction. Currently Market is entering in blow-off phase and As Bitcoin is forming similar pattern & fractals like last blow off phase so we are expecting a correction. No one knows exactly where it is going to top but based on our analysis there is possibility of \$23k - \$25k and then correction midterm to following targets \$18k - \$15k - \$12k. Expecting bearish move to start next week starting 21st of December.', status: 2));
+    //     }
+    //     if (kind.value == 2)
+    //     rowsValue$.rows.add(TBAnalyze(id: 1, namadid: 1, namad: 'USDCHF', kind: 2, premium: false, subject: 'wait to sell', senderid: 1, sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 16:45 PM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: '', status: 1));
+    //   }
+    //   if (premium.value == 6)
+    //     if (kind.value == 3)
+    //       rowsValue$.rows.add(TBAnalyze(id: 3, namadid: 3, namad: 'EURGBP', kind: 3, premium: true, subject: 'wait to sell', senderid: 1,sender: 'Arman Zahmatkesh', senddate: '2020/12/21 - 12:45 AM', smallpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', bigpic: 'https://s3.tradingview.com/u/u0B9fKPV_mid.png', expiredate: '2020/12/25', note: '', status: 2));
+    //   rows.add(DataModel(status: Status.Loaded, rows: rowsValue$.rows));
+    // });
   }
 
   like(int id){
@@ -412,6 +466,62 @@ class AnalyzeBloc extends Bloc{
   addComment(String msg){
     comments.rowsValue$.rows.add(TBComment(senderid: 1, sender: 'me', msg: msg, date: 'now'));
     comments.reload();
+  }
+}
+
+class SubscribeBloc extends Bloc{
+  SubscribeBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body){
+    this.loadData();
+  }
+
+  PublicBloc comments;
+
+  loadData() async{
+    try{
+      rows.add(DataModel(status: Status.Loading));
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Subscribe&etoken=$token');
+      if (_data['msg'] == "Success")
+        rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBSubscribe>((data)=>TBSubscribe.fromJson(data)).toList()));
+      else
+        rows.add(DataModel(status: Status.Error, msg: '${_data['msg']}'));
+    }
+    catch(e){
+      print('error: $e');
+      rows.add(DataModel(status: Status.Error, msg: '$e'));
+    }
+  }
+
+  saveData(BuildContext context, int id, String title, double price1, double price2, String note) async{
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=SaveSubscribe&token=$token&id=$id&title=$title&price1=$price1&price2=$price2&note=$note');
+      if (_data['msg'] == "Success"){
+        loadData();
+        Navigator.of(context).pop();
+      }
+      else
+        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+    }
+    catch(e){
+      myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page');
+    }
+  }
+
+  setActiveSubs(BuildContext context, int id, int active) async{
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=ActiveSubscribe&token=$token&id=$id&active=$active');
+      if (_data['msg'] == "Success"){
+        rowsValue$.rows.forEach((element){
+          if (element.id == id)
+            element.active = active == 1;
+        });
+        rows.add(rowsValue$);
+      }
+      else
+        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+    }
+    catch(e){
+      myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+    }
   }
 }
 

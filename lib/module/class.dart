@@ -172,7 +172,7 @@ class TBSignal{
     bool liked;
     String token;
  
-    TBSignal({this.accountname,this.premium,this.accountnumber,this.sender,this.operationtype,this.ticket,this.opentime,this.type,this.size,this.symbol,this.price,this.stoploss,this.takeprofit,this.closeprice,this.closetime,this.profit,this.likes,this.liked, this.token});
+    TBSignal({this.accountname,this.premium,this.accountnumber=0,this.sender,this.operationtype,this.ticket=0,this.opentime,this.type,this.size=0,this.symbol,this.price=0,this.stoploss=0,this.takeprofit=0,this.closeprice=0,this.closetime,this.profit=0,this.likes=0,this.liked=false, this.token});
  
     TBSignal.fromJson(Map<String, dynamic> json):
         accountname = json['accountname'],
@@ -202,7 +202,7 @@ class TBSignal{
         data['sender'] = this.sender;
         data['operationtype'] = this.operationtype;
         data['ticket'] = this.ticket;
-        data['opentime'] = this.opentime;
+        data['opentime'] = this.opentime; 
         data['type'] = this.type;
         data['size'] = this.size;
         data['symbol'] = this.symbol;
@@ -217,7 +217,12 @@ class TBSignal{
         data['token'] = this.token;
         return data;
     }
+
+    String toString(){
+      return "premium=${(this.premium ?? false) ? 1: 0}&accountnumber=${this.accountnumber}&operationtype=${this.operationtype}&ticket=${this.ticket}&opentime=${this.opentime}&type=${this.type}&size=${this.size}&symbol=${this.symbol}&price=${this.price}&stoploss=${this.stoploss}&takeprofit=${this.takeprofit}&closeprice=${this.closeprice}&closetime=${this.closetime}&profit=${this.profit}";
+    }
 }
+
 class TBComment{
   int senderid;
   String sender;
@@ -243,3 +248,36 @@ class TBComment{
       return data;
   }
 }
+
+class TBSubscribe{
+    int id;
+    bool active;
+    String title;
+    String note;
+    double price;
+    double price2;
+    String token;
+ 
+    TBSubscribe({this.id,this.active,this.title,this.note,this.price,this.price2, this.token});
+ 
+    TBSubscribe.fromJson(Map<String, dynamic> json):
+        id = json['id'],
+        active = json['active'] == 1,
+        title = json['title'],
+        note = json['note'],
+        price = json['price'],
+        price2 = json['price2'];
+ 
+    Map<String, dynamic> toJson(){
+        final Map<String, dynamic> data = new Map<String, dynamic>();
+        data['id'] = this.id;
+        data['active'] = this.active ? 1 : 0;
+        data['title'] = this.title;
+        data['note'] = this.note;
+        data['price'] = this.price;
+        data['price2'] = this.price2;
+        data['token'] = this.token;
+        return data;
+    }
+}
+

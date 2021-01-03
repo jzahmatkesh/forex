@@ -64,17 +64,17 @@ class IButton extends StatelessWidget {
     String _hnt = hint.isNotEmpty
       ? this.hint
       : type == Btn.Add
-        ? 'جدید'
+        ? 'New'
         : type == Btn.Del
-        ? 'حذف'
+        ? 'Delete'
         : type == Btn.Exit
-          ? 'بازگشت'
+          ? 'Back'
           : type == Btn.Reload
-            ? 'باگذاری مجدد'
+            ? 'Reload'
             : type == Btn.Save
-              ? 'ذخیره'
+              ? 'Save'
               : type == Btn.Edit
-                ? 'ویرایش'
+                ? 'Edit'
                 : '';
 
     Widget _icon = icon != null
@@ -123,18 +123,18 @@ class OButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _hnt = caption.isNotEmpty
+    String _hnt = (caption ?? '').isNotEmpty
       ? this.caption
       : type == Btn.Add
-        ? 'جدید'
+        ? 'new'
         : type == Btn.Del
-        ? 'حذف'
+        ? 'delete'
         : type == Btn.Exit
-          ? 'بازگشت'
+          ? 'return'
           : type == Btn.Reload
-            ? 'باگذاری مجدد'
+            ? 'reload'
             : type == Btn.Save
-              ? 'ذخیره'
+              ? 'save'
               : '';
 
     Widget _icon = icon != null
@@ -470,7 +470,7 @@ class GridRow extends StatelessWidget {
         children: [
           ...fields.map((e){
             if (e.data is String)
-              return Expanded(child: e);
+              return Expanded(child: e, flex: e.flex);
             else if (e.data is Edit) // || e.data is F2Edit
               return Expanded(flex: e.flex, child: Container(margin: EdgeInsets.symmetric(vertical: 5, horizontal: 3), child: e.data));
             else 

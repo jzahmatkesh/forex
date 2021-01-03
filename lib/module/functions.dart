@@ -154,20 +154,20 @@ void confirmMessage(BuildContext context, String title, String msg, {Function ye
     desc: msg,
     buttons: [
       DialogButton(
-        color: Colors.deepOrangeAccent,
         child: Text(
-          "خیر",
-          style: alertButtonStyle(),
-        ),
-        onPressed: () => noClick==null ? Navigator.pop(context) : noClick(),
-        width: 55,
-      ),
-      DialogButton(
-        child: Text(
-          "بلی",
+          "Yes",
           style: alertButtonStyle(),
         ),
         onPressed: () => yesclick==null ? Navigator.pop(context) : yesclick(),
+        width: 55,
+      ),
+      DialogButton(
+        color: Colors.deepOrangeAccent,
+        child: Text(
+          "No",
+          style: alertButtonStyle(),
+        ),
+        onPressed: () => noClick==null ? Navigator.pop(context) : noClick(),
         width: 55,
       ),
     ],
