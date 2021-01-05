@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:file_picker/file_picker.dart';
 import 'package:flash/flash.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -194,7 +196,7 @@ void showWaiting(BuildContext context){
                   children: [
                     CupertinoActivityIndicator(radius: 20.0,),
                     SizedBox(height: 10.0,),
-                    Text('...لطفا کمی شکیبا باشید', style: gridFieldStyle(),)
+                    Text('Please wait ...', style: gridFieldStyle(),)
                   ],
                 ),
               ),
@@ -313,6 +315,43 @@ Future<bool> sendSms(BuildContext context, String number, String msg) async{
 
 Color hexToColor(String code) {
   return new Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+}
+
+Future<String> sendFile(BuildContext context, String  token, Uint8List file, String type, int id) async{
+  var url = Uri.parse("http://topchart.org/getFile.php?token=$token&type=$type&id=$id");
+  // var request = new http.MultipartRequest("POST", url);
+  List<int> _selectedFile = file;
+  String baseimage = base64Encode(_selectedFile);
+
+  // request.files.add(http.MultipartFile.fromBytes('image', _selectedFile, filename: "text_upload.txt"));
+  // request.send().then((response) {
+  //   print(response.statusCode);
+  //   if (response.statusCode == 200) print("Uploaded!");
+  // });
+
+  var response = await http.post(
+    url, 
+    body: {
+      'image': baseimage,
+    }
+  );
+  return '${json.decode(utf8.decode(response.bodyBytes))[0]['msg']}';
+}
+
+void prcUploadImg({BuildContext context, String token, int id, String tag, VoidCallback ondone}) async{
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+    if(result != null) {
+      try{
+        showWaiting(context);
+        PlatformFile file = result.files.first;
+        var str = await sendFile(context, token, file.bytes , "$tag", id);
+        if (str == "Success")
+          ondone();
+      }
+      finally{
+        hideWaiting(context);
+      }
+    }
 }
 
 

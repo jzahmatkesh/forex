@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -420,7 +419,6 @@ class AnalyzeBloc extends Bloc{
         rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBAnalyze>((data)=>TBAnalyze.fromJson(data)).toList()));
       }
     catch(e){
-      print('error: $e');
       rows.add(DataModel(status: Status.Error, msg: '$e'));
     }
     // rows.add(DataModel(status: Status.Loading));
@@ -468,24 +466,57 @@ class AnalyzeBloc extends Bloc{
     comments.reload();
   }
 
-  saveAnalyze(BuildContext context, TBAnalyze analyze) async{
+  Future<int> saveAnalyze(BuildContext context, TBAnalyze analyze) async{
     if (analyze.subject.isEmpty)
       myAlert(context: context, title: 'error', message: 'title cannot be empty');
     else if (analyze.note.isEmpty)
       myAlert(context: context, title: 'error', message: 'note cannot be empty');
     else
-    try{
-      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=SaveAnalyze&token=$token&${analyze.toString()}');
-      if (_data['msg'] == "Success"){
-        loadData();
-        Navigator.of(context).pop();
+      try{
+        Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=SaveAnalyze&token=$token&${analyze.toString()}');
+        if (_data['msg'] == "Success"){
+          int _id = _data["body"][0]['id'];
+          bool ntf = true;
+          rowsValue$.rows.forEach((e){
+            if ((e as TBAnalyze).id == _id){
+              e = analyze;
+              ntf = false;
+            }
+          });
+          if (ntf){
+            analyze.id = _id;
+            rowsValue$.rows.insert(0, analyze);
+          }
+          rows.add(rowsValue$);
+          return _id;
+        }
+        else{
+          myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+          return 0;
+        }
       }
-      else
-        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
-    }
-    catch(e){
-      myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
-    }
+      catch(e){
+        myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+        return 0;
+      }
+      return 0;
+  }
+
+  delAnalyze(BuildContext context, int id, String symbol){
+    confirmMessage(context, 'delete', 'are you sure to delete $symbol analyze ?', yesclick: () async{
+      try{
+        Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=DelAnalyze&token=$token&id=$id');
+        if (_data['msg'] == "Success"){
+          loadData();
+          Navigator.of(context).pop();
+        }
+        else
+          myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+      }
+      catch(e){
+        myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+      }
+    });
   }
 }
 
@@ -595,3 +626,22 @@ class AdminBloc{
   }
 }
 
+class UsersBloc extends Bloc{
+  UsersBloc({@required BuildContext context,@required String api, @required String token, @required Map<String, dynamic> body}): super(context: context, api: api, token: token, body: body){
+    this.loadData();
+  }
+
+  loadData() async{
+    try{
+      rows.add(DataModel(status: Status.Loading));
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Users&token=$token');
+      if (_data['msg'] == "Success")
+        rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<User>((data)=>User.fromJson(data)).toList()));
+      else
+        rows.add(DataModel(status: Status.Error, msg: _data['msg']));
+    }
+    catch(e){
+      rows.add(DataModel(status: Status.Error));
+    }
+  }
+}

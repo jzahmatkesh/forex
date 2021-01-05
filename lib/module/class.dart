@@ -24,6 +24,7 @@ class User{
   String mobile;
   String email;
   int accountnumber;
+  String lastlogin;
   bool usermng;
   bool analysis;  
   bool subscription;
@@ -32,12 +33,12 @@ class User{
   String instagram;
   String telegram;
   String whatsapp;
-  String password;
   bool active;
+  String password;
   int follower;
   String token;
 
-  User({this.id,this.family,this.regdate,this.mobile,this.email,this.instagram,this.telegram,this.whatsapp,this.password,this.active, this.accountnumber, this.analysis, this.subscription, this.ticketmng, this.usermng, this.token, this.follower});
+  User({this.id,this.family,this.regdate,this.mobile,this.email,this.instagram,this.telegram,this.whatsapp,this.password,this.active, this.accountnumber, this.lastlogin, this.analysis, this.subscription, this.ticketmng, this.usermng, this.token, this.follower});
 
   User.fromJson(Map<String, dynamic> json):
       id = json['id'],
@@ -45,6 +46,7 @@ class User{
       mobile = json['mobile'],
       email = json['email'],
       accountnumber = json['accountnumber'],
+      lastlogin = json['lastlogin'],
       usermng = json['usermng'] == 1,
       analysis = json['analysis'] == 1,
       subscription = json['subscription'] == 1,
@@ -156,6 +158,7 @@ class TBSignal{
     String accountname;
     bool premium;
     int accountnumber;
+    int userid;
     String sender;
     String operationtype;
     int ticket;
@@ -173,12 +176,13 @@ class TBSignal{
     bool liked;
     String token;
  
-    TBSignal({this.accountname,this.premium,this.accountnumber=0,this.sender,this.operationtype,this.ticket=0,this.opentime,this.type,this.size=0,this.symbol,this.price=0,this.stoploss=0,this.takeprofit=0,this.closeprice=0,this.closetime,this.profit=0,this.likes=0,this.liked=false, this.token});
+    TBSignal({this.userid,this.accountname,this.premium,this.accountnumber=0,this.sender,this.operationtype,this.ticket=0,this.opentime,this.type,this.size=0,this.symbol,this.price=0,this.stoploss=0,this.takeprofit=0,this.closeprice=0,this.closetime,this.profit=0,this.likes=0,this.liked=false, this.token});
  
     TBSignal.fromJson(Map<String, dynamic> json):
         accountname = json['accountname'],
         premium = json['premium'] == 1,
         accountnumber = json['accountnumber'],
+        userid = json['userid'],
         sender = json['sender'],
         operationtype = json['operationtype'],
         ticket = json['ticket'],

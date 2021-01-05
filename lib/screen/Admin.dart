@@ -1,7 +1,12 @@
+import 'dart:html';
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:octo_image/octo_image.dart';
 
 import '../module/Bloc.dart';
 import '../module/Widgets.dart';
@@ -11,8 +16,12 @@ import '../module/functions.dart';
 AdminBloc _bloc;
 SignalBloc _signalBloc;
 AnalyzeBloc _analyzeBloc;
+UsersBloc _usersBloc;
 SubscribeBloc _subscribeBloc;
 SymbolBloc _symbolBloc;
+IntBloc _img;
+IntBloc _menu;
+
 class Admin extends StatelessWidget{
   const Admin({Key key}) : super(key: key);
 
@@ -22,7 +31,8 @@ class Admin extends StatelessWidget{
       _bloc = AdminBloc()..verifyUser(context);
     if (!_bloc.isLogedIn)
       _bloc.verifyUser(context);      
-    _symbolBloc = SymbolBloc()..loadData();
+    if (_symbolBloc == null)
+      _symbolBloc = SymbolBloc()..loadData();
     TextEditingController _edusr = TextEditingController();
     TextEditingController _edpss = TextEditingController();
     return Scaffold(
@@ -62,39 +72,49 @@ class AdminPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    IntBloc _menu = IntBloc()..setValue(1);
+    if (_menu == null)
+      _menu = IntBloc()..setValue(1);
+    if (_img == null)
+      _img = IntBloc()..setValue(1);
     return Container(
-      // padding: EdgeInsets.all(24),
       child: Row(
         children: [
           Expanded(
             child: Card(
-              child: StreamBuilder<int>(
-                stream: _menu.stream$,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData)
-                    return Column(
+              child: Column(
+                children: [
+                  SizedBox(height: 25),
+                  StreamWidget(
+                    stream: _img.stream$,
+                    itemBuilder: (i)=> FlatButton(
+                      onPressed: ()=>prcUploadImg(context: context, token: _bloc.currentUser.token, id: _bloc.currentUser.id, tag: 'UserImage', ondone: (){_img.setValue(Random().nextInt(48812));}),
+                      child: CircleAvatar(backgroundImage: NetworkImage('http://www.topchart.org/upload/UserImage${_bloc.currentUser.id}.jpg?id=${Random().nextInt(48812)}'), radius: 45,)
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text('${_bloc.currentUser.family}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
+                  SizedBox(height: 5),
+                  Text('Followers    ${_bloc.currentUser.follower}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
+                  SizedBox(height: 10),
+                  FlatButton(child: Text('edit profile', style: TextStyle(fontSize: 12, color: Colors.blueGrey)), onPressed: (){}),
+                  SizedBox(height: 15),
+                  Text('Dashboard', style: GoogleFonts.luckiestGuy(fontSize: 40, color: Colors.blueGrey)),
+                  Spacer(),
+                  StreamBuilder<int>(
+                    stream: _menu.stream$,
+                    builder: (context, snapshot)=>Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(height: 25),
-                        CircleAvatar(backgroundImage: AssetImage('images/user${_bloc.currentUser.id}.jpg'), radius: 45,),
-                        SizedBox(height: 10),
-                        Text('${_bloc.currentUser.family}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
-                        SizedBox(height: 5),
-                        Text('Followers    ${_bloc.currentUser.follower}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
-                        SizedBox(height: 10),
-                        FlatButton(child: Text('edit profile', style: TextStyle(fontSize: 12, color: Colors.blueGrey)), onPressed: (){}),
-                        SizedBox(height: 15),
-                        Text('Dashboard', style: GoogleFonts.luckiestGuy(fontSize: 40, color: Colors.blueGrey)),
-                        Expanded(flex: 1, child: Container()),
                         Menu(title: 'Signal', selected: snapshot.data==1, onTap: ()=>_menu.setValue(1), selectedColor: Colors.grey[200]),
                         Menu(title: 'Analyze', selected: snapshot.data==2, onTap: ()=>_menu.setValue(2), selectedColor: Colors.grey[200]),
                         Menu(title: 'Education', selected: snapshot.data==3, onTap: ()=>_menu.setValue(3), selectedColor: Colors.grey[200]),
                         Menu(title: 'Subscribe', selected: snapshot.data==4, onTap: ()=>_menu.setValue(4), selectedColor: Colors.grey[200]),
-                        Expanded(flex: 3, child: Container()),
+                        Menu(title: 'User Managment', selected: snapshot.data==5, onTap: ()=>_menu.setValue(5), selectedColor: Colors.grey[200]),
                       ],
-                    );
-                  return CupertinoActivityIndicator();
-                }
+                    ),
+                  ),
+                  Spacer(flex: 3),
+                ],
               ),
             ),
           ),
@@ -113,6 +133,8 @@ class AdminPage extends StatelessWidget {
                       return AdminAnalyze();
                     else if (snapshot.data == 4)
                       return AdminSubscribe();
+                    else if (snapshot.data == 5)
+                      return UserManagment();
                   return Center(child: Text('Please choose Menu from left side'));
                 },
               )
@@ -204,10 +226,10 @@ class AdminSignal extends StatelessWidget {
                 )
               ),
             ),
-            SizedBox(width: 15),
-            IButton(type: Btn.Add, onPressed: ()=>showFormAsDialog(context: context, form: EditSignal(signal: TBSignal(ticket: 0),))),
+            Spacer(),
+            IButton(type: Btn.Reload, onPressed: ()=>_signalBloc.loadData()),
             SizedBox(width: 5),
-            IButton(type: Btn.Reload, onPressed: ()=>_signalBloc.loadData())
+            IButton(type: Btn.Add, onPressed: ()=>showFormAsDialog(context: context, form: EditSignal(signal: TBSignal(ticket: 0),))),
           ],
         ),
         GridRow(
@@ -230,10 +252,9 @@ class AdminSignal extends StatelessWidget {
               [
                 Field(Checkbox(value: true, onChanged: (val){})),
                 Field(SizedBox(width: 10)),
-                Field(CircleAvatar(backgroundImage: AssetImage('images/user${(rw as TBSignal).accountnumber}.jpg'), radius: 17)),
+                Field(CircleAvatar(backgroundImage: NetworkImage('http://www.topchart.org/upload/UserImage${(rw as TBSignal).userid}.jpg?id=${Random().nextInt(48812)}'), radius: 17)),
                 Field(SizedBox(width: 25)),
                 Field('${(rw as TBSignal).symbol}'),
-                // Field('${(rw as TBSignal).title}'),
                 Field('${(rw as TBSignal).sender}'),
                 Field('${(rw as TBSignal).opentime}'),
                 Field('${(rw as TBSignal).likes}'),
@@ -315,8 +336,8 @@ class AdminAnalyze extends StatelessWidget {
                   value: 1,
                   items: [
                     DropdownMenuItem<int>(child: Text('All Traders'), value: 1),
-                    DropdownMenuItem<int>(child: Row(mainAxisSize: MainAxisSize.min,children: [CircleAvatar(backgroundImage: AssetImage('images/user1.jpg')),SizedBox(width: 10),Text('Arman Zahmatkesh')]), value: 2),
-                    DropdownMenuItem<int>(child: Row(mainAxisSize: MainAxisSize.min,children: [CircleAvatar(backgroundImage: AssetImage('images/user2.jpg')),SizedBox(width: 10),Text('Hassan Moghadam')]), value: 3),
+                    DropdownMenuItem<int>(child: Row(mainAxisSize: MainAxisSize.min,children: [CircleAvatar(backgroundImage: NetworkImage('http://www.topchart.org/upload/UserImage1.jpg')),SizedBox(width: 10),Text('Arman Zahmatkesh')]), value: 2),
+                    DropdownMenuItem<int>(child: Row(mainAxisSize: MainAxisSize.min,children: [CircleAvatar(backgroundImage: NetworkImage('http://www.topchart.org/upload/UserImage2.jpg')),SizedBox(width: 10),Text('Hassan Moghadam')]), value: 3),
                   ],
                   onChanged: (val){},
                   underline: Container(),
@@ -338,28 +359,49 @@ class AdminAnalyze extends StatelessWidget {
               if (snap.hasData && snap.data.status == Status.Loaded)
                 return ListView(
                   children: [
-                    ...snap.data.rows.map((e)=>Card(
+                    ...snap.data.rows.map((e)=>Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey)
+                      ),
+                      margin: EdgeInsets.symmetric(vertical: 5),
                       child: Container(
                         padding: EdgeInsets.all(12),
                         height: 150,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Checkbox(value: true, onChanged: (val){}),
+                            Column(
+                              children: [
+                                Checkbox(value: true, onChanged: (val){}),
+                                IButton(type: Btn.Edit, onPressed: ()=>showFormAsDialog(context: context, form: NewAnalyze(rec: e))),
+                                IButton(type: Btn.Del, onPressed: ()=>_analyzeBloc.delAnalyze(context, (e as TBAnalyze).id, (e as TBAnalyze).symbol)),
+                              ],
+                            ),
                             Container(
                               width: 150,
                               child: Column(
                                 children: [
-                                  CircleAvatar(backgroundImage: AssetImage('images/user${(e as TBAnalyze).senderid}.jpg')),
+                                  CircleAvatar(backgroundImage: NetworkImage('http://www.topchart.org/upload/UserImage${(e as TBAnalyze).senderid}.jpg?id=${Random().nextInt(48812)}')),
                                   SizedBox(height: 5),
                                   Icon(e.status ==1 ? Icons.trending_up : Icons.trending_down, color: e.status ==1 ? Colors.green : Colors.deepOrange),
                                   SizedBox(height: 5),
                                   Expanded(child: Text('${(e as TBAnalyze).subject}', softWrap: true, overflow: TextOverflow.ellipsis)),
+                                  SizedBox(height: 5),
+                                  Expanded(child: Text('${(e as TBAnalyze).symbol}', softWrap: true, overflow: TextOverflow.ellipsis)),
                                 ],
                               ),
                             ),
                             SizedBox(width: 15),
-                            Image(image: NetworkImage((e as TBAnalyze).smallpic ?? 'https://a.c-dn.net/c/content/dam/publicsites/igcom/uk/images/news-article-image-folder/BG_forex_market_trading_FX_foreign_exchange.jpg'), width: 150),
+                            Expanded(
+                              child: OctoImage(
+                                image: CachedNetworkImageProvider('http://topchart.org/upload/Analyze_Small${e.id}.jpg?id=${Random().nextInt(48812)}'),
+                                placeholderBuilder: OctoPlaceholder.blurHash('LEHV6nWB2yk8pyo0adR*.7kCMdnj'),
+                                errorBuilder: OctoError.icon(color: Colors.red),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            // Image(image: NetworkImage(''), width: 150),
                             SizedBox(width: 15),
                             Expanded(
                               child: Text('${(e as TBAnalyze).note}', overflow: TextOverflow.ellipsis, maxLines: 10)
@@ -393,102 +435,190 @@ class NewAnalyze extends StatelessWidget {
     FocusNode _fexpire = FocusNode();
     FocusNode _fnote = FocusNode();
     StringBloc _symbol = StringBloc()..setValue(rec.symbol  ?? 'EUR/USD');
-    IntBloc _kind = IntBloc()..setValue(rec.kind ?? 1);
-    IntBloc _status = IntBloc()..setValue(rec.status ?? 1);
+    IntBloc _kind = IntBloc()..setValue((rec.kind == 0 ? 1 : rec.kind) ?? 1);
+    IntBloc _status = IntBloc()..setValue((rec.status == 0 ? 1 : rec.status) ?? 1);
     IntBloc _premium = IntBloc()..setValue((rec.premium ?? false) ? 1 : 0);
+    IntBloc _wizard = IntBloc()..setValue(0);
+    _img = IntBloc()..setValue(1);
     return Container(
       width: screenWidth(context) * 0.65,
       padding: EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Header(title: 'analyze info', rightBtn: IButton(type: Btn.Save, onPressed: ()=>_analyzeBloc.saveAnalyze(context, TBAnalyze(id: rec.id, subject: _edsubject.text, kind: _kind.value, status: _status.value, premium: _premium.value==1, symbol: _symbol.value, expiredate: _edexpire.text, note: _ednote.text)))),
+          Header(
+            title: 'analyze info', 
+            rightBtn: StreamWidget(
+              stream: _wizard.stream$,
+              itemBuilder: (i) {
+                return i>0 || rec.id>0 ? IButton(type: Btn.Other, icon: FaIcon(i<=1 ? FontAwesomeIcons.arrowRight : FontAwesomeIcons.arrowLeft), onPressed: ()=>_wizard.setValue(i<=1 ? 2 : 1)) : Container();
+              }
+            ),
+            leftBtn: IButton(
+              type: Btn.Save, 
+              onPressed: () async{
+                int _id = await _analyzeBloc.saveAnalyze(context, TBAnalyze(id: rec.id, subject: _edsubject.text, kind: _kind.value, status: _status.value, premium: _premium.value==1, symbol: _symbol.value, expiredate: _edexpire.text, note: _ednote.text));
+                if (_id > 0){
+                  rec.id = _id;
+                  _wizard.setValue(2);
+                }
+              }
+            ),
+          ),
           SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(child: Edit(hint: 'subject', controller: _edsubject, focus: _fsubject, autofocus: true, onSubmitted: (val)=>focusChange(context, _fexpire))),
-              SizedBox(width: 5),
-              Expanded(child: Edit(hint: 'expire date', controller: _edexpire, focus: _fexpire, onSubmitted: (val)=>focusChange(context, _fnote))),
-            ]
+          Expanded(
+            child: StreamWidget(
+              stream: _wizard.stream$,
+              itemBuilder: (i) {
+                return i <= 1 ? Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: Edit(hint: 'subject', controller: _edsubject, focus: _fsubject, autofocus: true, onSubmitted: (val)=>focusChange(context, _fexpire))),
+                        SizedBox(width: 5),
+                        Expanded(child: Edit(hint: 'expire date', controller: _edexpire, focus: _fexpire, onSubmitted: (val)=>focusChange(context, _fnote))),
+                      ]
+                    ),
+                    SizedBox(height: 15),
+                    Row(
+                      children: [
+                        SizedBox(width: 5),
+                        Expanded(child: Card(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 25),
+                            child: StreamWidget(
+                              stream: _symbol.stream$,
+                              itemBuilder: (str)=>DropdownButton<String>(
+                                value: '$str',
+                                items: [
+                                  DropdownMenuItem(value: 'EUR/USD', child: Text('EUR/USD')),
+                                  DropdownMenuItem(value: 'GBP/USD', child: Text('GBP/USD')),
+                                  DropdownMenuItem(value: 'USD/JPY', child: Text('USD/JPY')),
+                                  DropdownMenuItem(value: 'USD/CHF', child: Text('USD/CHF')),
+                                  DropdownMenuItem(value: 'USD/CAD', child: Text('USD/CAD')),
+                                  DropdownMenuItem(value: 'AUD/USD', child: Text('AUD/USD')),
+                                  DropdownMenuItem(value: 'NZD/USD', child: Text('NZD/USD')),
+                                ],
+                                onChanged: (val)=>_symbol.setValue(val),
+                                underline: Container(),
+                              )
+                            ),
+                          ),
+                        )),
+                        SizedBox(width: 5),
+                        Expanded(child: Card(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 25),
+                            child: StreamWidget(
+                              stream: _kind.stream$,
+                              itemBuilder: (val)=>DropdownButton<int>(
+                                value: val,
+                                items: [
+                                  DropdownMenuItem(value: 1, child: Text('1 HOUR')),
+                                  DropdownMenuItem(value: 2, child: Text('4 HOUR')),
+                                  DropdownMenuItem(value: 3, child: Text('Daily')),
+                                  DropdownMenuItem(value: 4, child: Text('Weekly')),
+                                ],
+                                onChanged: (val)=>_kind.setValue(val),
+                                underline: Container(),
+                              )
+                            ),
+                          ),
+                        )),
+                        SizedBox(width: 5),
+                        Expanded(child: Card(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 25),
+                            child: StreamWidget(
+                              stream: _status.stream$,
+                              itemBuilder: (val)=>DropdownButton<int>(
+                                value: val,
+                                items: [
+                                  DropdownMenuItem(value: 1, child: Text('UP')),
+                                  DropdownMenuItem(value: 2, child: Text('Down')),
+                                ],
+                                onChanged: (val)=>_status.setValue(val),
+                                underline: Container(),
+                              )
+                            ),
+                          ),
+                        )),
+                        SizedBox(width: 5),
+                        Expanded(child: Row(
+                          children: [
+                            StreamWidget(
+                              stream: _premium.stream$,
+                              itemBuilder: (i)=>Checkbox(value: i==1, onChanged: (val)=>_premium.setValue(val ? 1 : 0))
+                            ),
+                            SizedBox(width: 5),
+                            Text('Premium'),
+                          ],
+                        )),
+                      ]
+                    ),
+                    Edit(hint: 'note', maxlines: 10, controller: _ednote, focus: _fnote),
+                  ],
+                ) : StreamWidget(
+                  stream: _img.stream$,
+                  itemBuilder: (i)=>Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Card(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.45),
+                                  borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))
+                                ),
+                                padding: EdgeInsets.all(12),
+                                child: IButton(type: Btn.Other, icon: FaIcon(FontAwesomeIcons.fileUpload), hint: 'Upload', onPressed: ()=>prcUploadImg(context: context, token: _bloc.currentUser.token, id: rec.id, tag: "AnalyzeSmall", ondone: (){int _flg = Random().nextInt(48812); _img.setValue(_flg);}))
+                              ),
+                              SizedBox(height: 10),
+                              Image(
+                                image: NetworkImage('http://topchart.org/upload/Analyze_Small${rec.id}.jpg?id=$i'),
+                                errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace)=>Text('😢'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: Card(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.45),
+                                  borderRadius: BorderRadius.only(topRight: Radius.circular(5), topLeft: Radius.circular(5))
+                                ),
+                                padding: EdgeInsets.all(12),
+                                child: IButton(type: Btn.Other, icon: FaIcon(FontAwesomeIcons.fileUpload), hint: 'Upload', onPressed: ()=>prcUploadImg(context: context, token: _bloc.currentUser.token, id: rec.id, tag: "AnalyzeBig", ondone: (){int _flg = Random().nextInt(48812); _img.setValue(_flg);}))
+                              ),
+                              SizedBox(height: 10),
+                              Expanded(
+                                child: Image(
+                                  image: NetworkImage('http://topchart.org/upload/Analyze_Big${rec.id}.jpg?id=$i'),
+                                  errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace)=>Text('😢'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                );
+              }
+            ),
           ),
-          SizedBox(height: 15),
-          Row(
-            children: [
-              SizedBox(width: 5),
-              Expanded(child: Card(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: StreamWidget(
-                    stream: _symbol.stream$,
-                    itemBuilder: (str)=>DropdownButton<String>(
-                      value: '$str',
-                      items: [
-                        DropdownMenuItem(value: 'EUR/USD', child: Text('EUR/USD')),
-                        DropdownMenuItem(value: 'GBP/USD', child: Text('GBP/USD')),
-                        DropdownMenuItem(value: 'USD/JPY', child: Text('USD/JPY')),
-                        DropdownMenuItem(value: 'USD/CHF', child: Text('USD/CHF')),
-                        DropdownMenuItem(value: 'USD/CAD', child: Text('USD/CAD')),
-                        DropdownMenuItem(value: 'AUD/USD', child: Text('AUD/USD')),
-                        DropdownMenuItem(value: 'NZD/USD', child: Text('NZD/USD')),
-                      ],
-                      onChanged: (val)=>_symbol.setValue(val),
-                      underline: Container(),
-                    )
-                  ),
-                ),
-              )),
-              SizedBox(width: 5),
-              Expanded(child: Card(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: StreamWidget(
-                    stream: _kind.stream$,
-                    itemBuilder: (val)=>DropdownButton<int>(
-                      value: val,
-                      items: [
-                        DropdownMenuItem(value: 1, child: Text('1 HOUR')),
-                        DropdownMenuItem(value: 2, child: Text('4 HOUR')),
-                        DropdownMenuItem(value: 3, child: Text('Daily')),
-                        DropdownMenuItem(value: 4, child: Text('Weekly')),
-                      ],
-                      onChanged: (val)=>_kind.setValue(val),
-                      underline: Container(),
-                    )
-                  ),
-                ),
-              )),
-              SizedBox(width: 5),
-              Expanded(child: Card(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: StreamWidget(
-                    stream: _status.stream$,
-                    itemBuilder: (val)=>DropdownButton<int>(
-                      value: val,
-                      items: [
-                        DropdownMenuItem(value: 1, child: Text('UP')),
-                        DropdownMenuItem(value: 2, child: Text('Down')),
-                      ],
-                      onChanged: (val)=>_status.setValue(val),
-                      underline: Container(),
-                    )
-                  ),
-                ),
-              )),
-              SizedBox(width: 5),
-              Expanded(child: Row(
-                children: [
-                  StreamWidget(
-                    stream: _premium.stream$,
-                    itemBuilder: (i)=>Checkbox(value: i==1, onChanged: (val)=>_premium.setValue(val ? 1 : 0))
-                  ),
-                  SizedBox(width: 5),
-                  Text('Premium'),
-                ],
-              )),
-            ]
-          ),
-          Edit(hint: 'note', maxlines: 10, controller: _ednote, focus: _fnote),
         ]
       ),
     );
@@ -720,4 +850,168 @@ class EditSignal extends StatelessWidget {
     );
   }
 }
+
+class UserManagment extends StatelessWidget {
+  const UserManagment({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (_usersBloc == null)
+      _usersBloc = UsersBloc(context: context, api: 'Users', token: _bloc.currentUser.token, body: {})..loadData();
+    return Column(
+      children: [
+        GridRow(
+          [
+            Field('Active'),
+            Field('Family', flex: 2),
+            Field('Last Login'),
+            Field('Admin'),
+            Field('Signal'),
+            Field('Analyze'),
+            Field('Subscription'),
+            Field('Ticket'),
+            Field(SizedBox(width: 15)),
+            Field(IButton(type: Btn.Add, onPressed: ()=>showFormAsDialog(context: context, form: EditUser(user: User(id: 0)))))
+          ],
+          header: true,
+        ),
+        Expanded(
+          child: StreamListWidget(
+            stream: _usersBloc.rowsStream$,
+            itembuilder: (data)=>GridRow(
+              [
+                Field(ICheckbox(value: (data as User).active, hint: 'avctive/deactive user', onChanged: (val){})),
+                Field(
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(25.0),
+                    child: Image(
+                      image: NetworkImage('http://www.topchart.org/upload/UserImage${(data as User).id}.jpg?id=${Random().nextInt(48812)}'),
+                      errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace)=>Container(width: 45, height: 45, child: Center(child: Text('😢'))),
+                      fit: BoxFit.cover,
+                      width: 45,
+                      height: 45,
+                    )
+                  )
+                ),
+                Field(SizedBox(width: 15)),
+                Field('${(data as User).family}', flex: 2),
+                Field('${(data as User).lastlogin}'),
+                Field(Expanded(child: ICheckbox(hint: 'user managment', value: (data as User).usermng, onChanged: (val){}))),
+                Field(Expanded(child: ICheckbox(hint: 'signal accountnumber', value: (data as User).accountnumber>0, onChanged: null))),
+                Field(Expanded(child: ICheckbox(hint: 'analysis managment', value: (data as User).analysis, onChanged: (val){}))),
+                Field(Expanded(child: ICheckbox(hint: 'subscription managment', value: (data as User).subscription, onChanged: (val){}))),
+                Field(Expanded(child: ICheckbox(hint: 'ticket managment', value: (data as User).ticketmng, onChanged: (val){}))),
+                Field(IButton(type: Btn.Edit, onPressed: ()=>showFormAsDialog(context: context, form: EditUser(user: (data as User))))),
+                Field(IButton(type: Btn.Del, onPressed: (){})),
+              ]
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class EditUser extends StatelessWidget {
+  const EditUser({Key key, @required this.user}) : super(key: key);
+
+  final User user;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: screenWidth(context) * 0.85,
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(18),
+            color: Colors.grey[200],
+            width: 275,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: FlatButton(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(25.0),
+                      child: Image(
+                        image: NetworkImage('http://www.topchart.org/upload/UserImage${user.id}.jpg?id=${Random().nextInt(48812)}'),
+                        errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace)=>Container(width: 125, height: 125, child: Center(child: FaIcon(FontAwesomeIcons.smile, size: 105, color: Colors.grey))),
+                        fit: BoxFit.cover,
+                        width: 125,
+                        height: 125,
+                      )
+                    ),
+                    onPressed: (){}
+                  )
+                ),
+                SizedBox(height: 50),
+                Text('permissions:'),
+                SizedBox(height: 5),
+                FilterItem(selected: user.usermng ?? false, title: 'User Managment', onSelected: (val){}),
+                FilterItem(selected: user.analysis ?? false, title: 'Analyze Managment', onSelected: (val){}),
+                FilterItem(selected: user.subscription ?? false, title: 'Subscription Managment', onSelected: (val){}),
+                FilterItem(selected: user.ticketmng ?? false, title: 'Ticket Managment', onSelected: (val){}),
+                SizedBox(height: 15),
+              ]
+            ),
+          ),
+          SizedBox(width: 15),
+          Expanded(
+            flex: 3,
+            child: Container(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Edit(hint: 'family', onSubmitted: (val){})),
+                      SizedBox(width: 5),
+                      Expanded(child: Edit(hint: 'Signal AccountNumber', onSubmitted: (val){})),
+                    ]
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(child: Edit(hint: 'mobile', onSubmitted: (val){})),
+                      SizedBox(width: 5),
+                      Expanded(child: Edit(hint: 'email', onSubmitted: (val){})),
+                    ]
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(child: Edit(hint: 'instagram', onSubmitted: (val){})),
+                      SizedBox(width: 5),
+                      Expanded(child: Edit(hint: 'whatsApp', onSubmitted: (val){})),
+                      SizedBox(width: 5),
+                      Expanded(child: Edit(hint: 'telegram', onSubmitted: (val){})),
+                    ]
+                  ),
+                  Spacer(),
+                  Row(
+                    children: [
+                      OButton(caption: 'return', type: Btn.Exit, onPressed: ()=>Navigator.of(context).pop(), color: Colors.deepOrange.withOpacity(0.75),),
+                      OButton(caption: 'save', type: Btn.Save, onPressed: (){}, color: Colors.green.withOpacity(0.75)),
+                    ]
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
+      )
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
 

@@ -534,7 +534,7 @@ class FilterItem extends StatelessWidget {
         elevation: this.selected ? 5 : 2,
         shape: BeveledRectangleBorder(side: BorderSide(color: Colors.black12, width: 0.2), borderRadius: BorderRadius.circular(5.0)),
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-        label: Text('${this.title}'),
+        label: Text('${this.title}', style: GoogleFonts.allerta()),
         selected: this.selected,
         onSelected: this.onSelected
       )
@@ -935,4 +935,22 @@ class SubscribeItem extends StatelessWidget {
   }
 }
 
+class ICheckbox extends StatelessWidget {
+  const ICheckbox({Key key, @required this.value, @required this.hint, this.onChanged}) : super(key: key);
+
+  final bool value;
+  final String hint;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: this.hint,
+      child: Checkbox(
+        value: this.value,
+        onChanged: this.onChanged,
+      ),
+    );
+  }
+}
 
