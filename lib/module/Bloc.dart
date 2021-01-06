@@ -17,6 +17,16 @@ class IntBloc{
   setValue(int i)=>_value.add(i);
 }
 
+class BoolBloc{
+  BoolBloc();
+
+  BehaviorSubject<bool> _value = BehaviorSubject<bool>();
+  Stream<bool> get stream$ => _value.stream;
+  bool get value => _value.value;
+
+  setValue(bool val)=>_value.add(val);
+}
+
 class StringBloc{
   StringBloc();
 
@@ -624,6 +634,12 @@ class AdminBloc{
       catch(e){
       }
   }
+
+  void  signOut() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    _user.add(DataModel(status: Status.Loaded, rows: []));
+  }
 }
 
 class UsersBloc extends Bloc{
@@ -644,4 +660,56 @@ class UsersBloc extends Bloc{
       rows.add(DataModel(status: Status.Error));
     }
   }
+
+  saveData(BuildContext context, User user) async{
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=SaveUser&token=$token&${user.toString()}');
+      if (_data['msg'] == "Success"){
+        loadData();
+        Navigator.of(context).pop();
+      }
+      else
+        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+    }
+    catch(e){
+      myAlert(context: context, title: 'error', message: '$e');
+    }
+  }
+
+  activeUser(BuildContext context, int id, bool act) async{
+    try{
+      Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=ActiveUser&token=$token&id=$id&active=${act ? 1 : 0}');
+      if (_data['msg'] == "Success"){
+        rowsValue$.rows.forEach((e){
+          if (e.id == id)
+            e.active = act;
+        });
+        rows.add(rowsValue$);
+        // Navigator.of(context).pop();
+      }
+      else
+        myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+    }
+    catch(e){
+      myAlert(context: context, title: 'error', message: '$e');
+    }
+  }
+
+  delUser(BuildContext context, int id, String family){
+    confirmMessage(context, 'delete', 'are you sure to delete $family?', yesclick: () async{
+      try{
+        Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=DelUser&token=$token&id=$id');
+        if (_data['msg'] == "Success"){
+          loadData();
+          Navigator.of(context).pop();
+        }
+        else
+          myAlert(context: context, title: 'Error', message: '${_data['msg']}');
+      }
+      catch(e){
+        myAlert(context: context, title: 'Error', message: 'error saving data on server. please try again after reload page $e');
+      }
+    });
+  }
+
 }

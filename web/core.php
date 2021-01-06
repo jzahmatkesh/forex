@@ -475,8 +475,9 @@
                         "mobile" => $row["mobile"], 
                         "email" => $row["email"], 
                         "accountnumber" => (int)$row["accountnumber"], 
+                        "paccountnumber" => (int)$row["paccountnumber"], 
                         "lastlogin" => $row["lastlogin"],
-                        "usrmng" => $row["usrmng"],
+                        "usrmng" => (int)$row["usrmng"],
                         "analysis" => (int)$row["analysis"],
                         "subscription" => (int)$row["subscription"],
                         "registerdate" => $row["registerdate"],
@@ -484,7 +485,11 @@
                         "instagram" => $row["instagram"],
                         "telegram" => $row["telegram"],
                         "whatsapp" => $row["whatsapp"],
-                        "active" => (int)$row["active"]
+                        "active" => (int)$row["active"],
+                        "analysiscount" => (int)$row["analysiscount"],
+                        "signalcount" => (int)$row["signalcount"],
+                        "likes" => (int)$row["likes"],
+                        "follower" => (int)$row["follower"]
                     );
                 }
                 else{
@@ -501,8 +506,122 @@
             echo json_encode($rows, JSON_UNESCAPED_UNICODE);
         }
     }
-    
+    else if ($command == "SaveUser"){
+        try{
+            $token = $conn->real_escape_string($_GET['token']);
+            $id = $conn->real_escape_string($_GET['id']);
+            $family = $conn->real_escape_string($_GET['family']);
+            $mobile = $conn->real_escape_string($_GET['mobile']);
+            $email = $conn->real_escape_string($_GET['email']);
+            $telegram = $conn->real_escape_string($_GET['telegram']);
+            $instagram = $conn->real_escape_string($_GET['instagram']);
+            $whatsapp = $conn->real_escape_string($_GET['whatsapp']);
+            $accountnumber = $conn->real_escape_string($_GET['accountnumber']);
+            $paccountnumber = $conn->real_escape_string($_GET['paccountnumber']);
+            $usermng = $conn->real_escape_string($_GET['usermng']);
+            $analysis = $conn->real_escape_string($_GET['analysis']);
+            $subscription = $conn->real_escape_string($_GET['subscription']);
+            $ticketmng = $conn->real_escape_string($_GET['ticketmng']);
+            $usrpass = $conn->real_escape_string($_GET['usrpass']);
 
+            $sql = "Call PrcSaveUser('$token', $id, '$family', '$mobile', '$email', '$telegram', '$instagram', '$whatsapp', $accountnumber, $paccountnumber, $usermng, $analysis, $subscription, $ticketmng, '$usrpass');";
+
+            $result = $conn->query($sql);
+            $msg = "";
+            $rows = array();
+            if (mysqli_num_rows($result) > 0) {
+                while($row = mysqli_fetch_assoc($result)){
+                    header('Content-type: application/json');
+                    $rows[] = array("msg" => $row["msg"], "id" => (int)$row["id"]);
+                    if ($row["msg"] == "Success")
+                        http_response_code(200);
+                    else
+                        http_response_code(404);
+                    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $rows[] = array("msg" => "error in send data to database $sql");
+                header('Content-type: application/json');
+                http_response_code(404);
+                echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        catch(Exception $e){
+            $rows[] = array("msg" => "error:");
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "ActiveUser"){
+        try{
+            $token = $conn->real_escape_string($_GET['token']);
+            $id = $conn->real_escape_string($_GET['id']);
+            $act = $conn->real_escape_string($_GET['active']);
+
+            $sql = "Call PrcSetUserActive('$token', $id, $act);";
+
+            $result = $conn->query($sql);
+            $msg = "";
+            $rows = array();
+            if (mysqli_num_rows($result) > 0) {
+                while($row = mysqli_fetch_assoc($result)){
+                    header('Content-type: application/json');
+                    $rows[] = array("msg" => $row["msg"]);
+                    if ($row["msg"] == "Success")
+                        http_response_code(200);
+                    else
+                        http_response_code(404);
+                    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $rows[] = array("msg" => "error in send data to database");
+                header('Content-type: application/json');
+                http_response_code(404);
+                echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        catch(Exception $e){
+            $rows[] = array("msg" => "error:");
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "DelUser"){
+        try{
+            $token = $conn->real_escape_string($_GET['token']);
+            $id = $conn->real_escape_string($_GET['id']);
+
+            $sql = "Call PrcDelUser('$token', $id);";
+
+            $result = $conn->query($sql);
+            $msg = "";
+            $rows = array();
+            if (mysqli_num_rows($result) > 0) {
+                while($row = mysqli_fetch_assoc($result)){
+                    header('Content-type: application/json');
+                    $rows[] = array("msg" => $row["msg"]);
+                    if ($row["msg"] == "Success")
+                        http_response_code(200);
+                    else
+                        http_response_code(404);
+                    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $rows[] = array("msg" => "error in send data to database");
+                header('Content-type: application/json');
+                http_response_code(404);
+                echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        catch(Exception $e){
+            $rows[] = array("msg" => "error:");
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
 
 
 

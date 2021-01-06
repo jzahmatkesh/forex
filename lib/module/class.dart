@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forex/module/functions.dart';
 
 enum AppTheme {
  Light, Dark
@@ -24,6 +25,7 @@ class User{
   String mobile;
   String email;
   int accountnumber;
+  int paccountnumber;
   String lastlogin;
   bool usermng;
   bool analysis;  
@@ -36,9 +38,12 @@ class User{
   bool active;
   String password;
   int follower;
+  int likes;
+  int analysisCount;
+  int signalCount;
   String token;
 
-  User({this.id,this.family,this.regdate,this.mobile,this.email,this.instagram,this.telegram,this.whatsapp,this.password,this.active, this.accountnumber, this.lastlogin, this.analysis, this.subscription, this.ticketmng, this.usermng, this.token, this.follower});
+  User({this.id,this.family,this.regdate,this.mobile,this.email,this.instagram,this.telegram,this.whatsapp,this.password,this.active, this.paccountnumber, this.accountnumber, this.lastlogin, this.analysis, this.subscription, this.ticketmng, this.usermng, this.token, this.follower, this.analysisCount, this.likes, this.signalCount});
 
   User.fromJson(Map<String, dynamic> json):
       id = json['id'],
@@ -46,8 +51,9 @@ class User{
       mobile = json['mobile'],
       email = json['email'],
       accountnumber = json['accountnumber'],
+      paccountnumber = json['paccountnumber'],
       lastlogin = json['lastlogin'],
-      usermng = json['usermng'] == 1,
+      usermng = json['usrmng'] == 1,
       analysis = json['analysis'] == 1,
       subscription = json['subscription'] == 1,
       regdate = json['regdate'],
@@ -57,6 +63,9 @@ class User{
       whatsapp = json['whatsapp'],
       password = json['password'],
       follower = json['follower'],
+      likes = json['likes'],
+      analysisCount = json['analysiscount'],
+      signalCount = json['signalcount'],
       active = json['active'] == 1,
       token = json['token'];
 
@@ -67,6 +76,7 @@ class User{
       data['mobile'] = this.mobile;
       data['email'] = this.email;
       data['accountnumber'] = this.accountnumber;
+      data['paccountnumber'] = this.paccountnumber;
       data['usermng'] = this.usermng ? 1 : 0;
       data['analysis'] = this.analysis ? 1 : 0;
       data['subscription'] = this.subscription ? 1 : 0;
@@ -80,6 +90,10 @@ class User{
       data['active'] = this.active ? 1 : 0;
       data['token'] = this.token;
       return data;
+  }
+
+  String toString(){
+    return "id=${this.id}&family=${this.family}&mobile=${this.mobile}&email=${this.email}&telegram=${this.telegram}&instagram=${this.instagram}&whatsapp${this.whatsapp}&accountnumber=${this.accountnumber}&paccountnumber=${this.paccountnumber}&usermng=${(this.usermng ?? false) ? 1 : 0}&analysis=${(this.analysis ?? false) ? 1 : 0}&subscription=${(this.subscription ?? false) ? 1 : 0}&ticketmng=${(this.ticketmng ?? false) ? 1 : 0}&usrpass=${this.password.isEmpty ? '' : generateMd5(this.password)}";
   }
 }
 

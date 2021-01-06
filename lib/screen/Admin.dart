@@ -50,7 +50,7 @@ class Admin extends StatelessWidget{
                 children: [
                   Text('Admin Control Panel', style: TextStyle(fontSize: 22)),
                   SizedBox(height: 25),
-                  Edit(hint: 'UserName', controller: _edusr, onSubmitted: (val){}),
+                  Edit(hint: 'Email', controller: _edusr, onSubmitted: (val){}),
                   SizedBox(height: 10),
                   Edit(hint: 'Password', password: true, controller: _edpss, onSubmitted: (val){}),
                   SizedBox(height: 25),
@@ -106,7 +106,7 @@ class AdminPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Menu(title: 'Signal', selected: snapshot.data==1, onTap: ()=>_menu.setValue(1), selectedColor: Colors.grey[200]),
-                        Menu(title: 'Analyze', selected: snapshot.data==2, onTap: ()=>_menu.setValue(2), selectedColor: Colors.grey[200]),
+                        Menu(title: 'Analysis', selected: snapshot.data==2, onTap: ()=>_menu.setValue(2), selectedColor: Colors.grey[200]),
                         Menu(title: 'Education', selected: snapshot.data==3, onTap: ()=>_menu.setValue(3), selectedColor: Colors.grey[200]),
                         Menu(title: 'Subscribe', selected: snapshot.data==4, onTap: ()=>_menu.setValue(4), selectedColor: Colors.grey[200]),
                         Menu(title: 'User Managment', selected: snapshot.data==5, onTap: ()=>_menu.setValue(5), selectedColor: Colors.grey[200]),
@@ -114,6 +114,7 @@ class AdminPage extends StatelessWidget {
                     ),
                   ),
                   Spacer(flex: 3),
+                  Menu(title: 'Exit', onTap: ()=>_bloc.signOut(), selectedColor: Colors.grey[200]),
                 ],
               ),
             ),
@@ -862,15 +863,14 @@ class UserManagment extends StatelessWidget {
       children: [
         GridRow(
           [
-            Field('Active'),
-            Field('Family', flex: 2),
+            Field(SizedBox(width: 120)),
+            Field('Family'),
             Field('Last Login'),
-            Field('Admin'),
-            Field('Signal'),
-            Field('Analyze'),
-            Field('Subscription'),
-            Field('Ticket'),
-            Field(SizedBox(width: 15)),
+            Field(Expanded(child: Text('Signal', textAlign: TextAlign.center))),
+            Field(Expanded(child: Text('analysis', textAlign: TextAlign.center))),
+            Field(Expanded(child: Text('follower', textAlign: TextAlign.center))),
+            Field(Expanded(child: Text('likes', textAlign: TextAlign.center))),
+            Field(SizedBox(width: 40)),
             Field(IButton(type: Btn.Add, onPressed: ()=>showFormAsDialog(context: context, form: EditUser(user: User(id: 0)))))
           ],
           header: true,
@@ -880,7 +880,7 @@ class UserManagment extends StatelessWidget {
             stream: _usersBloc.rowsStream$,
             itembuilder: (data)=>GridRow(
               [
-                Field(ICheckbox(value: (data as User).active, hint: 'avctive/deactive user', onChanged: (val){})),
+                Field(Tooltip(message: 'Active', child: Switch(value: (data as User).active, onChanged: (val)=>_usersBloc.activeUser(context, (data as User).id, val)))),
                 Field(
                   ClipRRect(
                     borderRadius: BorderRadius.circular(25.0),
@@ -893,16 +893,15 @@ class UserManagment extends StatelessWidget {
                     )
                   )
                 ),
-                Field(SizedBox(width: 15)),
-                Field('${(data as User).family}', flex: 2),
+                Field(SizedBox(width: 10)),
+                Field('${(data as User).family}'),
                 Field('${(data as User).lastlogin}'),
-                Field(Expanded(child: ICheckbox(hint: 'user managment', value: (data as User).usermng, onChanged: (val){}))),
-                Field(Expanded(child: ICheckbox(hint: 'signal accountnumber', value: (data as User).accountnumber>0, onChanged: null))),
-                Field(Expanded(child: ICheckbox(hint: 'analysis managment', value: (data as User).analysis, onChanged: (val){}))),
-                Field(Expanded(child: ICheckbox(hint: 'subscription managment', value: (data as User).subscription, onChanged: (val){}))),
-                Field(Expanded(child: ICheckbox(hint: 'ticket managment', value: (data as User).ticketmng, onChanged: (val){}))),
+                Field(Expanded(child: Text('${(data as User).signalCount}', textAlign: TextAlign.center))),
+                Field(Expanded(child: Text('${(data as User).analysisCount}', textAlign: TextAlign.center))),
+                Field(Expanded(child: Text('${(data as User).follower}', textAlign: TextAlign.center))),
+                Field(Expanded(child: Text('${(data as User).likes}', textAlign: TextAlign.center))),
                 Field(IButton(type: Btn.Edit, onPressed: ()=>showFormAsDialog(context: context, form: EditUser(user: (data as User))))),
-                Field(IButton(type: Btn.Del, onPressed: (){})),
+                Field(IButton(type: Btn.Del, onPressed: ()=>_usersBloc.delUser(context, (data as User).id, (data as User).family))),
               ]
             ),
           ),
@@ -919,6 +918,30 @@ class EditUser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController _edfamily = TextEditingController(text: user.family);
+    TextEditingController _edaccountnumber = TextEditingController(text: '${user.accountnumber}');
+    TextEditingController _edpaccountnumber = TextEditingController(text: '${user.paccountnumber}');
+    TextEditingController _edmobile = TextEditingController(text: '${user.mobile}');
+    TextEditingController _edemail = TextEditingController(text: '${user.email}');
+    TextEditingController _edinstagram = TextEditingController(text: '${user.instagram}');
+    TextEditingController _edtelegram = TextEditingController(text: '${user.telegram}');
+    TextEditingController _edwhatsapp = TextEditingController(text: '${user.whatsapp}');
+    TextEditingController _edpass1 = TextEditingController(text: '');
+    TextEditingController _edpass2 = TextEditingController(text: '');
+    FocusNode _ffamily = FocusNode();
+    FocusNode _faccountnumber = FocusNode();
+    FocusNode _fpaccountnumber = FocusNode();
+    FocusNode _fmobile = FocusNode();
+    FocusNode _femail = FocusNode();
+    FocusNode _finstagram = FocusNode();
+    FocusNode _ftelegram = FocusNode();
+    FocusNode _fwhatsapp = FocusNode();
+    FocusNode _fpass1 = FocusNode();
+    FocusNode _fpass2 = FocusNode();
+    BoolBloc _usrmng = BoolBloc()..setValue(user.usermng);
+    BoolBloc _analysis = BoolBloc()..setValue(user.analysis);
+    BoolBloc _subscription = BoolBloc()..setValue(user.subscription);
+    BoolBloc _ticketmng = BoolBloc()..setValue(user.ticketmng);
     return Container(
       width: screenWidth(context) * 0.85,
       child: Row(
@@ -948,10 +971,10 @@ class EditUser extends StatelessWidget {
                 SizedBox(height: 50),
                 Text('permissions:'),
                 SizedBox(height: 5),
-                FilterItem(selected: user.usermng ?? false, title: 'User Managment', onSelected: (val){}),
-                FilterItem(selected: user.analysis ?? false, title: 'Analyze Managment', onSelected: (val){}),
-                FilterItem(selected: user.subscription ?? false, title: 'Subscription Managment', onSelected: (val){}),
-                FilterItem(selected: user.ticketmng ?? false, title: 'Ticket Managment', onSelected: (val){}),
+                StreamWidget(stream: _usrmng.stream$, itemBuilder: (i)=>FilterItem(selected: i ?? false, title: 'User Managment', onSelected: (val)=>_usrmng.setValue(val))),
+                StreamWidget(stream: _analysis.stream$, itemBuilder: (i)=>FilterItem(selected: i ?? false, title: 'Analyze', onSelected: (val)=>_analysis.setValue(val))),
+                StreamWidget(stream: _subscription.stream$, itemBuilder: (i)=>FilterItem(selected: i ?? false, title: 'Subscription', onSelected: (val)=>_subscription.setValue(val))),
+                StreamWidget(stream: _ticketmng.stream$, itemBuilder: (i)=>FilterItem(selected: i ?? false, title: 'Ticket', onSelected: (val)=>_ticketmng.setValue(val))),
                 SizedBox(height: 15),
               ]
             ),
@@ -965,34 +988,74 @@ class EditUser extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Edit(hint: 'family', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'family', controller: _edfamily,focus: _ffamily ,onSubmitted: (val)=>focusChange(context, _faccountnumber))),
                       SizedBox(width: 5),
-                      Expanded(child: Edit(hint: 'Signal AccountNumber', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'Signal AccountNumber', controller: _edaccountnumber,focus: _faccountnumber ,onSubmitted: (val)=>focusChange(context, _fpaccountnumber))),
+                      SizedBox(width: 5),
+                      Expanded(child: Edit(hint: 'Signal Premium AccountNumber', controller: _edpaccountnumber ,focus: _fpaccountnumber ,onSubmitted: (val)=>focusChange(context, _fmobile))),
                     ]
                   ),
                   SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: Edit(hint: 'mobile', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'mobile', controller: _edmobile,focus: _fmobile ,onSubmitted: (val)=>focusChange(context, _femail))),
                       SizedBox(width: 5),
-                      Expanded(child: Edit(hint: 'email', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'email', controller: _edemail,focus: _femail ,onSubmitted: (val)=>focusChange(context, _finstagram))),
                     ]
                   ),
                   SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: Edit(hint: 'instagram', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'instagram', controller: _edinstagram,focus: _finstagram ,onSubmitted: (val)=>focusChange(context, _fwhatsapp))),
                       SizedBox(width: 5),
-                      Expanded(child: Edit(hint: 'whatsApp', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'whatsApp', controller: _edwhatsapp,focus: _fwhatsapp ,onSubmitted: (val)=>focusChange(context, _ftelegram))),
                       SizedBox(width: 5),
-                      Expanded(child: Edit(hint: 'telegram', onSubmitted: (val){})),
+                      Expanded(child: Edit(hint: 'telegram', controller: _edtelegram,focus: _ftelegram ,onSubmitted: (val)=>focusChange(context, _fpass1))),
+                    ]
+                  ),
+                  SizedBox(height: 35),
+                  Row(
+                    children: [
+                      Expanded(child: Edit(hint: 'password', password: true, controller: _edpass1, focus: _fpass1, onSubmitted: (val)=>focusChange(context, _fpass2))),
+                      SizedBox(width: 5),
+                      Expanded(child: Edit(hint: 'confirm password', password: true, controller: _edpass2, focus: _fpass2)),
                     ]
                   ),
                   Spacer(),
                   Row(
                     children: [
                       OButton(caption: 'return', type: Btn.Exit, onPressed: ()=>Navigator.of(context).pop(), color: Colors.deepOrange.withOpacity(0.75),),
-                      OButton(caption: 'save', type: Btn.Save, onPressed: (){}, color: Colors.green.withOpacity(0.75)),
+                      OButton(
+                        caption: 'save', 
+                        type: Btn.Save, 
+                        onPressed: (){
+                          if (_edpass1.text.isNotEmpty && _edpass1.text != _edpass2.text)
+                              myAlert(context: context, title: 'warning', message: 'confirm password not correct');
+                          else if (_edpass1.text.isNotEmpty && _edpass1.text.length < 6)
+                              myAlert(context: context, title: 'warning', message: 'password at least must be 6 characters');
+                          else
+                            _usersBloc.saveData(
+                              context, 
+                              User(
+                                id: user.id, 
+                                family: _edfamily.text, 
+                                mobile: _edmobile.text, 
+                                email: _edemail.text, 
+                                instagram: _edinstagram.text, 
+                                telegram: _edtelegram.text, 
+                                whatsapp: _edwhatsapp.text, 
+                                accountnumber: int.tryParse(_edaccountnumber.text), 
+                                paccountnumber: int.tryParse(_edpaccountnumber.text),
+                                usermng: _usrmng.value,
+                                analysis: _analysis.value,
+                                subscription: _subscription.value,
+                                ticketmng: _ticketmng.value,
+                                password: _edpass1.text
+                              )
+                            );
+                        },
+                        color: Colors.green.withOpacity(0.75)
+                      )
                     ]
                   )
                 ],
