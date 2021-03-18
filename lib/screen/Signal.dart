@@ -273,7 +273,7 @@ class SignalInfo extends StatelessWidget {
                           SizedBox(width: 5),
                           Expanded(child: Edit(hint: 'comment ...', controller: _edcom, onSubmitted: (val){_bloc.addComment(val); _edcom.clear();})),
                           SizedBox(width: 5),
-                          FlatButton(child: Text('POST', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.lightBlue[900])), onPressed: (){_bloc.addComment(_edcom.text); _edcom.clear();})
+                          TextButton(child: Text('POST', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.lightBlue[900])), onPressed: (){_bloc.addComment(_edcom.text); _edcom.clear();})
                         ],
                       ),
                       SizedBox(height: 10)

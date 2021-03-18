@@ -174,10 +174,10 @@ class TBSignal{
     int accountnumber;
     int userid;
     String sender;
-    String operationtype;
+    int operationtype;
     int ticket;
     String opentime;
-    String type;
+    int type;
     double size;
     String symbol;
     double price;
@@ -202,14 +202,14 @@ class TBSignal{
         ticket = json['ticket'],
         opentime = json['opentime'],
         type = json['type'],
-        size = json['size'],
+        size = json['size'] * 1.0,
         symbol = json['symbol'],
-        price = json['price'],
-        stoploss = json['stoploss'],
-        takeprofit = json['takeprofit'],
-        closeprice = json['closeprice'],
+        price = json['price'] * 1.0,
+        stoploss = json['stoploss'] * 1.0,
+        takeprofit = json['takeprofit'] * 1.0,
+        closeprice = json['closeprice'] * 1.0,
         closetime = json['closetime'],
-        profit = json['profit'],
+        profit = json['profit'] * 1.0,
         likes = json['likes'],
         liked = json['liked'] == 1;
  

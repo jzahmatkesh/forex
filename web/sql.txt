@@ -1,0 +1,1 @@
+sql:  CALL PrcWriteSignal('Vahid', 790173, '', 0, '', '', 0, '', 0, 0, 0, 0, '', 0);

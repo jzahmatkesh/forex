@@ -18,8 +18,8 @@
     }
 
     try{
-        if(isset($_POST['json'])) {
-            $json = json_decode($_POST["json"],JSON_PRETTY_PRINT);
+        // if(isset(file_get_contents('php://input'))) {
+            $json = json_decode(file_get_contents('php://input'),JSON_PRETTY_PRINT);
 
             $accountname = $json["AccountName"];
             $accountnumber = $json["AccountNumber"];
@@ -35,13 +35,14 @@
             $ClosePrice = $json["PositionOperation"][0]["ClosePrice"];
             $CloseTime = $json["PositionOperation"][0]["CloseTime"];
             $Profit = $json["PositionOperation"][0]["Profit"];
+            $ProfitPoint = $json["PositionOperation"][0]["ProfitPoint"];
 
-            $sql = "CALL PrcWriteSignal('$accountname', $accountnumber, '$operationtype', $Ticket, '$OpenTime', '$Type', $Size, '$Symbol', $Price, $Stoploss, $Takeprofit, $ClosePrice, '$CloseTime', $Profit);";
+            $sql = "CALL PrcWriteSignal('$accountname', $accountnumber, '$operationtype', $Ticket, '$OpenTime', '$Type', $Size, '$Symbol', $Price, $Stoploss, $Takeprofit, $ClosePrice, '$CloseTime', $Profit, $ProfitPoint);";
 
-            $sqlfile = fopen("sql.txt", "w") or die("Unable to open file!");
-            $stxt = "sql:  " .$sql;
-            fwrite($sqlfile, $stxt);
-            fclose($sqlfile);
+            // $sqlfile = fopen("sql.txt", "w") or die("Unable to open file!");
+            // $stxt = "sql:  " .$sql;
+            // fwrite($sqlfile, $stxt);
+            // fclose($sqlfile);
 
             $result = $conn->query($sql);
     
@@ -63,11 +64,11 @@
             $fp = fopen('results'.date("hisa").'.json', 'w');
             fwrite($fp, $json);
             fclose($fp);
-        } else {
-            $rawData = array("type" => -2, "msg" => "Object Not Received");
-            header('Content-type: application/json');
-            echo json_encode($rawData, JSON_UNESCAPED_UNICODE);
-        }
+        // } else {
+        //     $rawData = array("type" => -2, "msg" => "Object Not Received");
+        //     header('Content-type: application/json');
+        //     echo json_encode($rawData, JSON_UNESCAPED_UNICODE);
+        // }
     }
     catch(Exception $e) {
         $rawData = array("type" => -3, "msg" => "Exception occurred");

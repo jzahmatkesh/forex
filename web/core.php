@@ -1,4 +1,10 @@
 <?php
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\Exception;
+
+    require 'PHPMailer/Exception.php';
+    require 'PHPMailer/PHPMailer.php';
+    require 'PHPMailer/SMTP.php';
     header("Content-Type: text/html;charset=UTF-8");
     header('Access-Control-Allow-Origin: *');
 
@@ -13,6 +19,44 @@
     // Check connection
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
+    }
+
+    function sendMail($sendto, $note){
+        // try{
+            $mail = new PHPMailer(true);
+
+            $mail->isSMTP();// Set mailer to use SMTP
+            $mail->CharSet = "utf-8";// set charset to utf8
+            $mail->SMTPAuth = true;// Enable SMTP authentication
+            $mail->SMTPSecure = 'tls';// Enable TLS encryption, `ssl` also accepted
+            
+            $mail->Host = 'mail.topchart.org';// Specify main and backup SMTP servers
+            $mail->Port = 587;// TCP port to connect to
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+            $mail->isHTML(true);// Set email format to HTML
+            
+            $mail->Username = 'info@topchart.org';// SMTP username
+            $mail->Password = 'P@$$w0rd';// SMTP password
+            
+            $mail->setFrom('info@topchart.org', 'Topchart Co');//Your application NAME and EMAIL
+            $mail->Subject = "Email confirmation code";//Message subject
+            $mail->MsgHTML("$note");// Message body
+            $mail->addAddress("$sendto", 'User Unknown');// Target email
+            
+            
+            $mail->send();
+        // }
+        // catch(Exception $e){
+        //     $rows[] = array("msg" => "error sending confirmation mail $e");
+        //     header('Content-type: application/json');
+        //     echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        // }
     }
 
     $command = $_GET['command'];
@@ -118,7 +162,8 @@
     }
     else if ($command == "Signal"){
         $token = $conn->real_escape_string($_GET['token']);
-        $sql = "Call PrcSignal('$token');";
+        $sort = $conn->real_escape_string($_GET['sort']);
+        $sql = "Call PrcSignal('$token', $sort);";
         $result = $conn->query($sql);
 
         $rows = array();
@@ -129,10 +174,10 @@
                     "accountnumber" => (int)$row["AccountNumber"], 
                     "accountname" => $row["AccountName"], 
                     "userid" => (int)$row["userid"], 
-                    "operationtype" => $row["OperationType"], 
+                    "operationtype" => (int)$row["OperationType"], 
                     "ticket" => (int)$row["Ticket"], 
                     "opentime" => $row["OpenTime"],
-                    "type" => $row["Type"],
+                    "type" => (int)$row["Type"],
                     "size" => (double)$row["Size"],
                     "symbol" => $row["Symbol"],
                     "price" => (double)$row["Price"],
@@ -142,6 +187,7 @@
                     "closetime" => $row["CloseTime"],
                     "sender" => $row["Sender"],
                     "profit" => (double)$row["Profit"],
+                    "ProfitPoint" => (double)$row["ProfitPoint"],
                     "premium" => (int)$row["premium"],
                     "liked" => (int)$row["liked"],
                     "likes" => (int)$row["likes"]
@@ -149,6 +195,88 @@
             }
             header('Content-type: application/json');
             http_response_code(200);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        } else {
+            $rows[] = array("msg" => 'error in connection to database');
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "SignalLike"){
+        $token = $conn->real_escape_string($_GET['token']);
+        $ticket = $conn->real_escape_string($_GET['ticket']);
+        $sql = "Call PrcSignalLike('$token', $ticket);";
+        $result = $conn->query($sql);
+
+        $rows = array();
+        $msg = "";
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            while($row = mysqli_fetch_assoc($result)){
+                $msg = $row["msg"];
+                $rows[] = array("msg" => $row["msg"]);
+            }
+            header('Content-type: application/json');
+            if ($msg == "Success")
+                http_response_code(200);
+            else
+                http_response_code(500);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        } else {
+            $rows[] = array("msg" => 'error in connection to database');
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "SignalComment"){
+        $token = $conn->real_escape_string($_GET['token']);
+        $ticket = $conn->real_escape_string($_GET['ticket']);
+        $sql = "Call PrcSignalComment('$token', $ticket);";
+        $result = $conn->query($sql);
+
+        $rows = array();
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            while($row = mysqli_fetch_assoc($result)){
+                $rows[] = array(
+                    "id" => (int)$row["ID"], 
+                    "date" => $row["date"], 
+                    "note" => $row["note"], 
+                    "userid" => (int)$row["userid"], 
+                    "userfamily" => $row["UserFamily"], 
+                );
+            }
+            header('Content-type: application/json');
+            http_response_code(200);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        } else {
+            header('Content-type: application/json');
+            http_response_code(200);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "AddSignalComment"){
+        $token = $conn->real_escape_string($_GET['token']);
+        $ticket = $conn->real_escape_string($_GET['ticket']);
+        $note = $conn->real_escape_string($_GET['note']);
+        $sql = "Call PrcAddSignalComment('$token', $ticket, '$note');";
+        $result = $conn->query($sql);
+
+        $rows = array();
+        $msg = "";
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            while($row = mysqli_fetch_assoc($result)){
+                $msg = $row["msg"];
+                $rows[] = array("msg" => $row["msg"], "id" => (int)$row["id"]);
+            }
+            header('Content-type: application/json');
+            if ($msg == "Success")
+                http_response_code(200);
+            else
+                http_response_code(500);
             echo json_encode($rows, JSON_UNESCAPED_UNICODE);
         } else {
             $rows[] = array("msg" => 'error in connection to database');
@@ -185,6 +313,88 @@
             }
             header('Content-type: application/json');
             http_response_code(200);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        } else {
+            $rows[] = array("msg" => 'error in connection to database');
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "AnalyzeLike"){
+        $token = $conn->real_escape_string($_GET['token']);
+        $id = $conn->real_escape_string($_GET['id']);
+        $sql = "Call PrcAnalyzeLike('$token', $id);";
+        $result = $conn->query($sql);
+
+        $rows = array();
+        $msg = "";
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            while($row = mysqli_fetch_assoc($result)){
+                $msg = $row["msg"];
+                $rows[] = array("msg" => $row["msg"]);
+            }
+            header('Content-type: application/json');
+            if ($msg == "Success")
+                http_response_code(200);
+            else
+                http_response_code(500);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        } else {
+            $rows[] = array("msg" => 'error in connection to database');
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "AnalyzeComment"){
+        $token = $conn->real_escape_string($_GET['token']);
+        $id= $conn->real_escape_string($_GET['id']);
+        $sql = "Call PrcAnalyzeComment('$token', $id);";
+        $result = $conn->query($sql);
+
+        $rows = array();
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            while($row = mysqli_fetch_assoc($result)){
+                $rows[] = array(
+                    "id" => (int)$row["ID"], 
+                    "date" => $row["date"], 
+                    "note" => $row["note"], 
+                    "userid" => (int)$row["userid"], 
+                    "userfamily" => $row["UserFamily"], 
+                );
+            }
+            header('Content-type: application/json');
+            http_response_code(200);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        } else {
+            header('Content-type: application/json');
+            http_response_code(200);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "AddAnalyzeComment"){
+        $token = $conn->real_escape_string($_GET['token']);
+        $id = $conn->real_escape_string($_GET['id']);
+        $note = $conn->real_escape_string($_GET['note']);
+        $sql = "Call PrcAddAnalyzeComment('$token', $id, '$note');";
+        $result = $conn->query($sql);
+
+        $rows = array();
+        $msg = "";
+        if (mysqli_num_rows($result) > 0) {
+            // output data of each row
+            while($row = mysqli_fetch_assoc($result)){
+                $msg = $row["msg"];
+                $rows[] = array("msg" => $row["msg"], "id" => (int)$row["id"]);
+            }
+            header('Content-type: application/json');
+            if ($msg == "Success")
+                http_response_code(200);
+            else
+                http_response_code(500);
             echo json_encode($rows, JSON_UNESCAPED_UNICODE);
         } else {
             $rows[] = array("msg" => 'error in connection to database');
@@ -622,6 +832,80 @@
             echo json_encode($rows, JSON_UNESCAPED_UNICODE);
         }
     }
+    else if ($command == "SendMail"){
+        try{
+            $sendto = $_GET['sendto'];
+            $digit = mt_rand(100000, 999999);
+            sendMail("$sendto", "Confirmation Code: $digit");
+            $rows = array();
+            $rows[] = array("msg" => "Success", "digit" => "$digit");
+            header('Content-type: application/json');
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+        catch(Exception $e){
+            $rows[] = array("msg" => "error:");
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+    else if ($command == "RegisterUser"){
+        try{
+            $family = $conn->real_escape_string($_GET['family']);
+            $mobile = $conn->real_escape_string($_GET['mobile']);
+            $email = $conn->real_escape_string($_GET['email']);
+            $pass = $conn->real_escape_string($_GET['pass']);
+            $sql = "Call PrcRegisterUser('$family', '$mobile', '$email', '$pass');";
+
+            $result = $conn->query($sql);
+            $msg = "";
+            $rows = array();
+            if (mysqli_num_rows($result) > 0) {
+                while($row = mysqli_fetch_assoc($result)){
+                    header('Content-type: application/json');
+                    if ($row["msg"] == "Success"){
+                        http_response_code(200);
+                        $rows[] = array(
+                            "msg" => 'Success', 
+                            "id" => (int)$row["id"], 
+                            "family" => $row["family"], 
+                            "mobile" => $row["mobile"], 
+                            "email" => $row["email"], 
+                            "accountnumber" => (int)$row["accountnumber"], 
+                            "usrmng" => (int)$row["UsrMng"], 
+                            "analysis" => (int)$row["Analysis"], 
+                            "subscription" => (int)$row["Subscription"], 
+                            "regdate" => $row["RegisterDate"], 
+                            "ticketmng" => $row["ticketmng"], 
+                            "instagram" => $row["instagram"], 
+                            "telegram" => $row["telegram"], 
+                            "whatsapp" => $row["whatsapp"], 
+                            "follower" => (int)$row["follower"], 
+                            "ticket" => (int)$row["ticket"],
+                            "token" => $row["token"]
+                        );
+                    }
+                    else{
+                        http_response_code(404);
+                        $rows[] = array("msg" => $row["msg"]);
+                    }
+                    echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+                }
+            } else {
+                $rows[] = array("msg" => "error in send data to database");
+                header('Content-type: application/json');
+                http_response_code(404);
+                echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        catch(Exception $e){
+            $rows[] = array("msg" => "error:");
+            header('Content-type: application/json');
+            http_response_code(404);
+            echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        }
+    }
+
 
 
 

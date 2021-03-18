@@ -182,7 +182,7 @@ class FButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Tooltip(
       message: this.hint,
-      child: FlatButton(
+      child: TextButton(
         child: this.child,
         onPressed: this.onPressed,
       )

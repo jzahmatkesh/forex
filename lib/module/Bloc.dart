@@ -338,6 +338,7 @@ class SignalBloc extends Bloc{
     try{
       rows.add(DataModel(status: Status.Loading));
       Map<String, dynamic> _data = await postToServer(api: 'http://topchart.org/core.php?command=Signal&token=$token&sort=${sort.value}&');
+print('${_data['body'][0]}');
       if (_data['msg'] == "Success")
         rows.add(DataModel(status: Status.Loaded, rows: _data['body'].map<TBSignal>((data)=>TBSignal.fromJson(data)).toList()));
       }

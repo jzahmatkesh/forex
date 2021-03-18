@@ -1,4 +1,4 @@
-import 'dart:html';
+// import 'dart:html';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -86,7 +86,7 @@ class AdminPage extends StatelessWidget {
                   SizedBox(height: 25),
                   StreamWidget(
                     stream: _img.stream$,
-                    itemBuilder: (i)=> FlatButton(
+                    itemBuilder: (i)=> TextButton(
                       onPressed: ()=>prcUploadImg(context: context, token: _bloc.currentUser.token, id: _bloc.currentUser.id, tag: 'UserImage', ondone: (){_img.setValue(Random().nextInt(48812));}),
                       child: CircleAvatar(backgroundImage: NetworkImage('http://www.topchart.org/upload/UserImage${_bloc.currentUser.id}.jpg?id=${Random().nextInt(48812)}'), radius: 45,)
                     ),
@@ -96,7 +96,7 @@ class AdminPage extends StatelessWidget {
                   SizedBox(height: 5),
                   Text('Followers    ${_bloc.currentUser.follower}', style: GoogleFonts.montserrat(fontSize: 10, color: Colors.blueGrey)),
                   SizedBox(height: 10),
-                  FlatButton(child: Text('edit profile', style: TextStyle(fontSize: 12, color: Colors.blueGrey)), onPressed: (){}),
+                  TextButton(child: Text('edit profile', style: TextStyle(fontSize: 12, color: Colors.blueGrey)), onPressed: (){}),
                   SizedBox(height: 15),
                   Text('Dashboard', style: GoogleFonts.luckiestGuy(fontSize: 40, color: Colors.blueGrey)),
                   Spacer(),
@@ -114,7 +114,14 @@ class AdminPage extends StatelessWidget {
                     ),
                   ),
                   Spacer(flex: 3),
-                  Menu(title: 'Exit', onTap: ()=>_bloc.signOut(), selectedColor: Colors.grey[200]),
+                  Menu(title: 'Exit', onTap: (){
+                    _signalBloc = null;
+                    _analyzeBloc = null;
+                    _usersBloc = null;
+                    _subscribeBloc = null;
+                    _symbolBloc = null;
+                    _bloc.signOut();
+                  }, selectedColor: Colors.grey[200]),
                 ],
               ),
             ),
@@ -263,7 +270,7 @@ class AdminSignal extends StatelessWidget {
                 Field(IButton(type: Btn.Edit, onPressed: ()=>showFormAsDialog(context: context, form: EditSignal(signal: rw)))),
                 Field(IButton(type: Btn.Del, onPressed: ()=>_signalBloc.delSignal(context, (rw as TBSignal).ticket, (rw as TBSignal).symbol)))
               ],
-              color: _signalBloc.rowsValue$.rows.indexOf(rw).isOdd ? rowColor(context) : Colors.transparent,
+              color: _signalBloc.rowsValue$.rows.indexOf(rw).isOdd ? rowColor(context) : Colors.white,
             ),
           ),
         ),
@@ -731,9 +738,9 @@ class EditSignal extends StatelessWidget {
   Widget build(BuildContext context) {
     StringBloc _symbol = StringBloc()..setValue(signal.symbol ?? 'choose symbol ...');
     TextEditingController _edticket = TextEditingController(text: signal.ticket.toString());
-    TextEditingController _edoperationtype = TextEditingController(text: signal.operationtype);
+    TextEditingController _edoperationtype = TextEditingController(text: '${signal.operationtype}');
     TextEditingController _edopentime = TextEditingController(text: signal.opentime);
-    TextEditingController _edtype = TextEditingController(text: signal.type);
+    TextEditingController _edtype = TextEditingController(text: '${signal.type}');
     TextEditingController _edsize = TextEditingController(text: signal.size.toString());
     TextEditingController _edprice = TextEditingController(text: signal.price.toString());
     TextEditingController _edstoploss = TextEditingController(text: signal.stoploss.toString());
@@ -832,9 +839,9 @@ class EditSignal extends StatelessWidget {
                   accountnumber: signal.accountnumber,
                   ticket: int.tryParse(_edticket.text),
                   symbol: _symbol.value,
-                  operationtype: _edoperationtype.text,
+                  operationtype: int.tryParse(_edoperationtype.text),
                   opentime: _edopentime.text,
-                  type: _edtype.text,
+                  type: int.tryParse(_edtype.text),
                   size: double.tryParse(_edsize.text),
                   price: double.tryParse(_edprice.text),
                   stoploss: double.tryParse(_edstoploss.text),
@@ -954,7 +961,7 @@ class EditUser extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: FlatButton(
+                  child: TextButton(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(25.0),
                       child: Image(
